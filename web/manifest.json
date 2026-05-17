@@ -1,6 +1,6 @@
 {
-    "name": "insta_in",
-    "short_name": "insta_in",
+    "name": "Insta In",
+    "short_name": "Insta In",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
