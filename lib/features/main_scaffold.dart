@@ -35,8 +35,8 @@ class _MainScaffoldState extends State<MainScaffold> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.coins),
-            label: 'Earn',
+            icon: Icon(LucideIcons.home),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.listStart),
