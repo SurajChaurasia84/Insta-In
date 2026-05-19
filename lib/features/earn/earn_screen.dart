@@ -18,7 +18,7 @@ class EarnScreen extends StatefulWidget {
 
 class _EarnScreenState extends State<EarnScreen> {
   bool _isClaiming = false;
-  int _coins = 0;
+  double _coins = 0.0;
   StreamSubscription<DocumentSnapshot>? _userSubscription;
 
   @override
@@ -40,7 +40,7 @@ class _EarnScreenState extends State<EarnScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         setState(() {
-          _coins = prefs.getInt('cache_coins_${user.uid}') ?? 0;
+          _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
         });
       }
     } catch (_) {}
@@ -55,7 +55,7 @@ class _EarnScreenState extends State<EarnScreen> {
           .snapshots()
           .listen((snapshot) async {
         if (snapshot.exists && snapshot.data() != null) {
-          final int coins = snapshot.data()!['coins'] ?? 0;
+          final double coins = (snapshot.data()!['coins'] ?? 0).toDouble();
           if (mounted) {
             setState(() {
               _coins = coins;
@@ -63,7 +63,7 @@ class _EarnScreenState extends State<EarnScreen> {
           }
           try {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('cache_coins_${user.uid}', coins);
+            await prefs.setDouble('cache_coins_${user.uid}', coins);
           } catch (_) {}
         }
       });
@@ -90,11 +90,11 @@ class _EarnScreenState extends State<EarnScreen> {
     final String campaignId = taskData['id'];
     final String goal = taskData['goal'] ?? 'views';
     
-    int reward = 1;
+    double reward = 1.0;
     if (goal == 'likes') {
-      reward = 4;
+      reward = 4.0;
     } else if (goal == 'followers') {
-      reward = 8;
+      reward = 0.20;
     }
 
     setState(() {
@@ -125,7 +125,7 @@ class _EarnScreenState extends State<EarnScreen> {
           throw Exception('This campaign is already completed!');
         }
 
-        final int currentCoins = userSnapshot.data()?['coins'] ?? 0;
+        final double currentCoins = (userSnapshot.data()?['coins'] ?? 0).toDouble();
         final int totalCompleted = userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0;
 
         // 1. Reward the viewer
@@ -156,7 +156,7 @@ class _EarnScreenState extends State<EarnScreen> {
         Navigator.pop(context); // Close dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🎉 Claimed +₹$reward successfully!'),
+            content: Text('🎉 Claimed +₹${reward.toStringAsFixed(2)} successfully!'),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -184,6 +184,9 @@ class _EarnScreenState extends State<EarnScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    final String dateStr = DateTime.now().toIso8601String().substring(0, 10);
+    final String userDayKey = "${user.uid}_$dateStr";
+
     final String adId = adData['id'];
     const int reward = 1; // ₹1 reward for sponsor visits
 
@@ -209,8 +212,8 @@ class _EarnScreenState extends State<EarnScreen> {
 
         final adDataMap = adSnapshot.data()!;
         final List viewedUsers = adDataMap['viewedUsers'] ?? [];
-        if (viewedUsers.contains(user.uid)) {
-          throw Exception('You have already claimed reward for this ad.');
+        if (viewedUsers.contains(userDayKey)) {
+          throw Exception('You have already claimed reward for this ad today.');
         }
 
         final int currentCompleted = adDataMap['completedCount'] ?? 0;
@@ -233,7 +236,7 @@ class _EarnScreenState extends State<EarnScreen> {
         final int newCompleted = currentCompleted + 1;
         transaction.update(adRef, {
           'completedCount': newCompleted,
-          'viewedUsers': FieldValue.arrayUnion([user.uid]),
+          'viewedUsers': FieldValue.arrayUnion([userDayKey]),
           'status': newCompleted >= targetQuantity ? 'completed' : 'active',
         });
 
@@ -282,11 +285,11 @@ class _EarnScreenState extends State<EarnScreen> {
       barrierDismissible: !_isClaiming,
       builder: (context) {
         final String goal = task['goal'] ?? 'views';
-        int reward = 1;
+        double reward = 1.0;
         if (goal == 'likes') {
-          reward = 4;
+          reward = 4.0;
         } else if (goal == 'followers') {
-          reward = 8;
+          reward = 0.20;
         }
 
         return StatefulBuilder(
@@ -320,7 +323,7 @@ class _EarnScreenState extends State<EarnScreen> {
                       const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Reward: +₹$reward',
+                        'Reward: +₹${reward.toStringAsFixed(2)}',
                         style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 16),
                       ),
                     ],
@@ -469,6 +472,9 @@ class _EarnScreenState extends State<EarnScreen> {
       );
     }
 
+    final String dateStr = DateTime.now().toIso8601String().substring(0, 10);
+    final String userDayKey = "${user.uid}_$dateStr";
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -497,7 +503,7 @@ class _EarnScreenState extends State<EarnScreen> {
                       const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '$_coins',
+                        _coins.toStringAsFixed(2),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppTheme.textPrimary,
@@ -593,7 +599,7 @@ class _EarnScreenState extends State<EarnScreen> {
                   final String creatorId = data['userId'] ?? '';
                   final int current = data['completedCount'] ?? 0;
                   final int target = data['quantity'] ?? 0;
-                  return creatorId != user.uid && !viewedUsers.contains(user.uid) && current < target;
+                  return creatorId != user.uid && !viewedUsers.contains(userDayKey) && current < target;
                 }).toList();
 
                 if (activeAds.isEmpty) return const SizedBox();
@@ -747,7 +753,8 @@ class _EarnScreenState extends State<EarnScreen> {
                       final String creatorId = data['userId'] ?? '';
                       final int current = data['completedCount'] ?? 0;
                       final int target = data['quantity'] ?? 0;
-                      return creatorId != user.uid && current < target;
+                      final String goal = data['goal'] ?? '';
+                      return creatorId != user.uid && current < target && goal == 'followers';
                     }).map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       return {
@@ -764,7 +771,7 @@ class _EarnScreenState extends State<EarnScreen> {
                       final String creatorId = data['userId'] ?? '';
                       final int current = data['completedCount'] ?? 0;
                       final int target = data['quantity'] ?? 0;
-                      return creatorId != user.uid && !viewedUsers.contains(user.uid) && current < target;
+                      return creatorId != user.uid && !viewedUsers.contains(userDayKey) && current < target;
                     }).map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       return {
@@ -821,29 +828,18 @@ class _EarnScreenState extends State<EarnScreen> {
                         IconData icon;
                         String title;
                         String subtitle;
-                        int reward = 1;
+                        double reward = 1.0;
 
                         if (isSponsor) {
                           icon = LucideIcons.megaphone;
                           title = task['businessName'] ?? 'Sponsored Ad';
                           subtitle = task['headline'] ?? 'Visit & earn coins';
-                          reward = 1;
+                          reward = 1.0;
                         } else {
-                          final String goal = task['goal'] ?? 'views';
+                          icon = LucideIcons.userPlus;
+                          title = 'Follow Instagram Creator';
                           subtitle = 'Tap to complete task';
-                          if (goal == 'likes') {
-                            icon = LucideIcons.heart;
-                            title = 'Like Instagram Post';
-                            reward = 4;
-                          } else if (goal == 'followers') {
-                            icon = LucideIcons.userPlus;
-                            title = 'Follow Instagram Creator';
-                            reward = 8;
-                          } else {
-                            icon = LucideIcons.playCircle;
-                            title = 'Watch Instagram Reel';
-                            reward = 1;
-                          }
+                          reward = 0.20;
                         }
 
                         return Card(
@@ -928,7 +924,7 @@ class _EarnScreenState extends State<EarnScreen> {
                                           const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 14),
                                           const SizedBox(width: 4),
                                           Text(
-                                            '+₹$reward',
+                                            '+₹${reward.toStringAsFixed(2)}',
                                             style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16),
                                           ),
                                         ],
