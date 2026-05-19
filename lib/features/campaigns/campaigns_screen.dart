@@ -41,7 +41,11 @@ class CampaignsScreen extends StatelessWidget {
             );
           }
 
-          final docs = snapshot.data?.docs ?? [];
+          final allDocs = snapshot.data?.docs ?? [];
+          final docs = allDocs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return (data['goal'] ?? '') == 'followers';
+          }).toList();
           
           if (docs.isEmpty) {
             return Center(
@@ -93,25 +97,14 @@ class CampaignsScreen extends StatelessWidget {
               final data = doc.data() as Map<String, dynamic>;
 
               final String link = data['instagramLink'] ?? '';
-              final String goal = data['goal'] ?? 'views';
               final int current = data['completedCount'] ?? 0;
               final int target = data['quantity'] ?? 100;
               final String status = data['status'] ?? 'active';
 
               final double progress = (target > 0) ? (current / target).clamp(0.0, 1.0) : 0.0;
 
-              IconData icon;
-              String goalTitle;
-              if (goal == 'likes') {
-                icon = LucideIcons.heart;
-                goalTitle = 'Instagram Likes';
-              } else if (goal == 'followers') {
-                icon = LucideIcons.userPlus;
-                goalTitle = 'Instagram Followers';
-              } else {
-                icon = LucideIcons.playCircle;
-                goalTitle = 'Instagram Views';
-              }
+              const IconData icon = LucideIcons.userPlus;
+              const String goalTitle = 'Instagram Followers';
 
               final isCompleted = status == 'completed' || current >= target;
 
@@ -130,7 +123,7 @@ class CampaignsScreen extends StatelessWidget {
                               color: AppTheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(icon, color: AppTheme.primary, size: 20),
+                            child: const Icon(icon, color: AppTheme.primary, size: 20),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -178,7 +171,7 @@ class CampaignsScreen extends StatelessWidget {
                             style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                           ),
                           Text(
-                            '$current / $target $goal',
+                            '$current / $target followers',
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
                           ),
                         ],
