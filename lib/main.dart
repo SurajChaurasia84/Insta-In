@@ -13,21 +13,24 @@ void main() async {
   // 1. Initialize Firebase
   await Firebase.initializeApp();
 
-  // 2. Configure System Status Bar Style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Color(0xFF1E293B), // Matches AppTheme.surface
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
-
-  // 3. Check Session & Onboarding status
+  // 2. Check Session, Onboarding status, and Theme preference
   final prefs = await SharedPreferences.getInstance();
   final bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
   final User? currentUser = FirebaseAuth.instance.currentUser;
+  
+  final bool isLightMode = prefs.getBool('is_light_mode') ?? false;
+  AppTheme.themeNotifier.value = isLightMode ? ThemeMode.light : ThemeMode.dark;
+
+  // 3. Configure System Status Bar Style
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isLightMode ? Brightness.dark : Brightness.light,
+      statusBarBrightness: isLightMode ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: isLightMode ? const Color(0xFFFFFFFF) : const Color(0xFF1E293B), // Matches surface
+      systemNavigationBarIconBrightness: isLightMode ? Brightness.dark : Brightness.light,
+    ),
+  );
 
   // If onboarding is done AND user is logged in, directly go to Main Dashboard.
   // Otherwise, they MUST go through the Onboarding / Google Sign-In.
@@ -44,11 +47,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Insta In',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      home: homeWidget,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppTheme.themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'Insta In',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          home: homeWidget,
+        );
+      },
     );
   }
 }
