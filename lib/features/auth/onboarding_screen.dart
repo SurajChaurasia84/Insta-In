@@ -30,13 +30,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
     {
       'title': 'Support & Get Rewarded',
-      'description': 'Support other creators by engaging with their content and get coins added to your wallet instantly.',
-      'icon': LucideIcons.coins,
+      'description': 'Support other creators by engaging with their content and get money added to your wallet instantly.',
+      'icon': LucideIcons.indianRupee,
       'color': Colors.amber,
     },
     {
       'title': 'Promote Your Profile',
-      'description': 'Create your own custom campaigns using your earned coins to boost your post metrics instantly.',
+      'description': 'Create your own custom campaigns using your wallet balance to boost your post metrics instantly.',
       'icon': LucideIcons.rocket,
       'color': AppTheme.secondary,
     },
@@ -122,20 +122,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               AppTheme.background,
-              Color(0xFF1E1B4B), // Indigo 950
+              const Color(0xFF1E1B4B), // Indigo 950
               AppTheme.background,
             ],
           ),
         ),
         child: SafeArea(
           child: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
                     color: AppTheme.primary,
                   ),
@@ -240,7 +240,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                            RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.textSecondary,
                                 fontSize: 12,
                                 height: 1.4,
@@ -249,7 +249,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 const TextSpan(text: 'By signing in, you agree to our '),
                                 TextSpan(
                                   text: 'Privacy Policy',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.primary,
                                     fontWeight: FontWeight.bold,
                                     decoration: TextDecoration.underline,

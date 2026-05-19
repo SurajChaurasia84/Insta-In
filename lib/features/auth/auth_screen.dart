@@ -24,13 +24,13 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               AppTheme.background,
-              Color(0xFF1E1B4B), // Indigo 950
+              const Color(0xFF1E1B4B), // Indigo 950
               AppTheme.background,
             ],
           ),
@@ -93,10 +93,10 @@ class _AuthScreenState extends State<AuthScreen> {
                           ],
                           TextFormField(
                             decoration: const InputDecoration(
-                              hintText: 'Email Address',
-                              prefixIcon: Icon(LucideIcons.mail),
+                                hintText: 'Email Address',
+                                prefixIcon: Icon(LucideIcons.mail),
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 16),
                           TextFormField(
                             obscureText: true,
@@ -121,7 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               isLogin
                                   ? "Don't have an account? Sign up"
                                   : "Already have an account? Log in",
-                              style: const TextStyle(color: AppTheme.textSecondary),
+                              style: TextStyle(color: AppTheme.textSecondary),
                             ),
                           )
                         ],
