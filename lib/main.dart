@@ -1,13 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:insta_in/core/theme.dart';
-import 'package:insta_in/features/auth/auth_screen.dart';
+import 'package:insta_in/features/auth/onboarding_screen.dart';
+import 'package:insta_in/features/main_scaffold.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 1. Initialize Firebase
+  await Firebase.initializeApp();
+
+  // 2. Configure System Status Bar Style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Color(0xFF1E293B), // Matches AppTheme.surface
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  // 3. Check Session & Onboarding status
+  final prefs = await SharedPreferences.getInstance();
+  final bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+
+  // If onboarding is done AND user is logged in, directly go to Main Dashboard.
+  // Otherwise, they MUST go through the Onboarding / Google Sign-In.
+  final Widget defaultHome = (onboardingCompleted && currentUser != null)
+      ? const MainScaffold()
+      : const OnboardingScreen();
+
+  runApp(MyApp(homeWidget: defaultHome));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget homeWidget;
+  const MyApp({super.key, required this.homeWidget});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +48,7 @@ class MyApp extends StatelessWidget {
       title: 'Insta In',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const AuthScreen(),
+      home: homeWidget,
     );
   }
 }
