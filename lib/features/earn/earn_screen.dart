@@ -278,14 +278,32 @@ class _EarnScreenState extends State<EarnScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Chip(
-              backgroundColor: AppTheme.surface,
-              avatar: const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 18),
-              label: Text('$_coins', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-              side: BorderSide(color: AppTheme.primary.withOpacity(0.2)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$_coins',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          )
+          ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
