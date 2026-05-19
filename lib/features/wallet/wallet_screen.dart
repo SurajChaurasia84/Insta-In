@@ -1,19 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:insta_in/core/theme.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:insta_in/features/wallet/deposit_screen.dart';
 
-class WalletScreen extends StatelessWidget {
+class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
 
   @override
+  State<WalletScreen> createState() => _WalletScreenState();
+}
+
+class _WalletScreenState extends State<WalletScreen> {
+  int _coins = 0;
+  StreamSubscription<DocumentSnapshot>? _userSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedCoins();
+    _subscribeToUserCoins();
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadCachedCoins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        setState(() {
+          _coins = prefs.getInt('cache_coins_${user.uid}') ?? 0;
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _subscribeToUserCoins() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userSubscription = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .listen((snapshot) async {
+        if (snapshot.exists && snapshot.data() != null) {
+          final int coins = snapshot.data()!['coins'] ?? 0;
+          if (mounted) {
+            setState(() {
+              _coins = coins;
+            });
+          }
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('cache_coins_${user.uid}', coins);
+          } catch (_) {}
+        }
+      });
+    }
+  }
+
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+    final date = timestamp.toDate();
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    }
+
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final day = date.day.toString().padLeft(2, '0');
+    final month = months[date.month - 1];
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+
+    return '$day $month, $hour:$minute';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Mock Transactions
-    final transactions = [
-      {'title': 'Campaign Created', 'amount': -150, 'date': 'Today, 10:30 AM', 'isEarn': false},
-      {'title': 'Watched 3 Reels', 'amount': 30, 'date': 'Yesterday, 4:15 PM', 'isEarn': true},
-      {'title': 'Deposit Funds', 'amount': 500, 'date': '12 May 2026', 'isEarn': true},
-      {'title': 'Followed User', 'amount': 20, 'date': '10 May 2026', 'isEarn': true},
-    ];
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in first.')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -23,7 +109,7 @@ class WalletScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Balance Card
+            // Real Balance Card
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -49,10 +135,13 @@ class WalletScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(LucideIcons.coins, color: Colors.amber, size: 36),
-                        SizedBox(width: 12),
-                        Text('400', style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900)),
+                      children: [
+                        const Icon(LucideIcons.coins, color: Colors.amber, size: 36),
+                        const SizedBox(width: 12),
+                        Text(
+                          '$_coins',
+                          style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -60,7 +149,12 @@ class WalletScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const DepositScreen()),
+                              );
+                            },
                             icon: const Icon(LucideIcons.arrowDownToLine, size: 18),
                             label: const Text('Deposit'),
                             style: ElevatedButton.styleFrom(
@@ -72,7 +166,11 @@ class WalletScreen extends StatelessWidget {
                         const SizedBox(width: 16),
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Withdrawals will be integrated soon!')),
+                              );
+                            },
                             icon: const Icon(LucideIcons.arrowUpFromLine, size: 18),
                             label: const Text('Withdraw'),
                             style: ElevatedButton.styleFrom(
@@ -88,45 +186,101 @@ class WalletScreen extends StatelessWidget {
               ),
             ),
             
-            // Transactions List
+            // Transactions List Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: const Text('Recent Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              itemCount: transactions.length,
-              itemBuilder: (context, index) {
-                final tx = transactions[index];
-                final isEarn = tx['isEarn'] as bool;
-                
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12.0),
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isEarn ? AppTheme.success.withOpacity(0.1) : AppTheme.error.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        isEarn ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
-                        color: isEarn ? AppTheme.success : AppTheme.error,
+
+            // Real transactions query from subcollection
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('activities')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      style: const TextStyle(color: AppTheme.error),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+
+                final txDocs = snapshot.data?.docs ?? [];
+
+                if (txDocs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: Center(
+                      child: Text(
+                        'No transactions recorded yet.',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                       ),
                     ),
-                    title: Text(tx['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(tx['date'] as String, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                    trailing: Text(
-                      '${isEarn ? '+' : ''}${tx['amount']}',
-                      style: TextStyle(
-                        color: isEarn ? AppTheme.success : AppTheme.error,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  itemCount: txDocs.length,
+                  itemBuilder: (context, index) {
+                    final doc = txDocs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    
+                    final String title = data['title'] ?? 'Activity Log';
+                    final String description = data['description'] ?? '';
+                    final String type = data['type'] ?? 'earned';
+                    final int coins = data['coins'] ?? 0;
+                    final Timestamp? timestamp = data['timestamp'] as Timestamp?;
+                    
+                    final String formattedTime = _formatTimestamp(timestamp);
+                    final isEarned = type == 'earned';
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isEarned ? AppTheme.success.withOpacity(0.1) : AppTheme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isEarned ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
+                            color: isEarned ? AppTheme.success : AppTheme.error,
+                          ),
+                        ),
+                        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                          formattedTime.isNotEmpty ? formattedTime : description,
+                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                        ),
+                        trailing: Text(
+                          '${isEarned ? '+' : '-'}$coins',
+                          style: TextStyle(
+                            color: isEarned ? AppTheme.success : AppTheme.error,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),
