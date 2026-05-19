@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:insta_in/features/wallet/deposit_screen.dart';
+import 'package:insta_in/features/wallet/withdraw_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -136,7 +137,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(LucideIcons.coins, color: Colors.amber, size: 36),
+                        const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 36),
                         const SizedBox(width: 12),
                         Text(
                           '$_coins',
@@ -167,8 +168,11 @@ class _WalletScreenState extends State<WalletScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Withdrawals will be integrated soon!')),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WithdrawScreen(currentBalance: _coins),
+                                ),
                               );
                             },
                             icon: const Icon(LucideIcons.arrowUpFromLine, size: 18),
@@ -187,9 +191,9 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             
             // Transactions List Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: const Text('Recent Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Recent Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
 
             // Real transactions query from subcollection
@@ -222,8 +226,8 @@ class _WalletScreenState extends State<WalletScreen> {
                 final txDocs = snapshot.data?.docs ?? [];
 
                 if (txDocs.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(40.0),
+                  return Padding(
+                    padding: const EdgeInsets.all(40.0),
                     child: Center(
                       child: Text(
                         'No transactions recorded yet.',
@@ -268,10 +272,10 @@ class _WalletScreenState extends State<WalletScreen> {
                         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text(
                           formattedTime.isNotEmpty ? formattedTime : description,
-                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                         ),
                         trailing: Text(
-                          '${isEarned ? '+' : '-'}$coins',
+                          '${isEarned ? '+' : '-'}₹$coins',
                           style: TextStyle(
                             color: isEarned ? AppTheme.success : AppTheme.error,
                             fontWeight: FontWeight.bold,

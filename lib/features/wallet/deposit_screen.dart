@@ -16,12 +16,15 @@ class _DepositScreenState extends State<DepositScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _utrController = TextEditingController();
+  final _pageController = PageController();
+  int _currentQRIndex = 0;
   bool _isSubmitting = false;
 
   @override
   void dispose() {
     _amountController.dispose();
     _utrController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -87,7 +90,7 @@ class _DepositScreenState extends State<DepositScreen> {
   }
 
   void _copyUPI() {
-    Clipboard.setData(const ClipboardData(text: 'your_upi_id@ybl'));
+    Clipboard.setData(const ClipboardData(text: '7427019465@ibl'));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('UPI ID copied to clipboard'),
@@ -125,12 +128,12 @@ class _DepositScreenState extends State<DepositScreen> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'First Time Bonus!',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             'Add ₹100 for the first time and get ₹120 in your wallet!',
                             style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
@@ -154,26 +157,69 @@ class _DepositScreenState extends State<DepositScreen> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
-                      // Placeholder for QR Code
-                      Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(LucideIcons.qrCode, size: 80, color: Colors.black87),
-                              SizedBox(height: 8),
-                              Text('Place your QR Asset here', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      StatefulBuilder(
+                        builder: (context, setLocalState) {
+                          return Column(
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: PageView(
+                                  controller: _pageController,
+                                  onPageChanged: (index) {
+                                    setLocalState(() {
+                                      _currentQRIndex = index;
+                                    });
+                                  },
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        color: Colors.white,
+                                        padding: const EdgeInsets.all(8),
+                                        child: Image.asset(
+                                          'assets/upi1.jpeg',
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Container(
+                                        color: Colors.white,
+                                        padding: const EdgeInsets.all(8),
+                                        child: Image.asset(
+                                          'assets/upi2.jpeg',
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(2, (index) {
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    height: 8,
+                                    width: _currentQRIndex == index ? 24 : 8,
+                                    decoration: BoxDecoration(
+                                      color: _currentQRIndex == index
+                                          ? AppTheme.primary
+                                          : AppTheme.textSecondary.withOpacity(0.4),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  );
+                                }),
+                              ),
                             ],
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
@@ -184,7 +230,7 @@ class _DepositScreenState extends State<DepositScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
-                              'your_upi_id@ybl',
+                              '7427019465@ibl',
                               style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
                             ),
                             InkWell(
@@ -279,8 +325,8 @@ class _DepositScreenState extends State<DepositScreen> {
                   }
                   final docs = snapshot.data?.docs ?? [];
                   if (docs.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(16.0),
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Center(
                         child: Text('No deposit requests yet.', style: TextStyle(color: AppTheme.textSecondary)),
                       ),
