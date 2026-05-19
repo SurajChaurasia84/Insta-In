@@ -16,10 +16,10 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
   final _formKey = GlobalKey<FormState>();
   final _linkController = TextEditingController();
   
-  int _selectedPackage = 0; // 0 for Combo Pack (75 Rs), 1 for Growth Pack (100 Rs)
+  int _selectedPackage = 0; // 0 for Combo Pack (75 Rs), 1 for Growth Pack (150 Rs)
   bool _isCreating = false;
 
-  int get _totalCost => _selectedPackage == 0 ? 75 : 100;
+  int get _totalCost => _selectedPackage == 0 ? 75 : 150;
 
   @override
   void dispose() {
@@ -61,7 +61,7 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
         }
 
         final int currentCampaigns = userSnapshot.data()?['campaignsCount'] ?? userSnapshot.data()?['campaigns'] ?? 0;
-        final int campaignIncrement = (_selectedPackage == 0) ? 2 : 1;
+        const int campaignIncrement = 1;
 
         // Deduct coins and update campaignsCount
         transaction.update(userRef, {
@@ -69,68 +69,32 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
           'campaignsCount': currentCampaigns + campaignIncrement,
         });
 
-        if (_selectedPackage == 0) {
-          // Combo Pack: 100 Likes + 30 Followers
-          // 1. Create Followers campaign (cost = 75)
-          transaction.set(campaignRef, {
-            'id': campaignRef.id,
-            'userId': user.uid,
-            'instagramLink': link,
-            'goal': 'followers',
-            'quantity': 30,
-            'completedCount': 0,
-            'totalCost': 75,
-            'createdAt': FieldValue.serverTimestamp(),
-            'status': 'active',
-          });
+        final int qty = (_selectedPackage == 0) ? 200 : 500;
 
-          // 2. Create Likes campaign (cost = 0)
-          final likesCampaignRef = FirebaseFirestore.instance.collection('campaigns').doc();
-          transaction.set(likesCampaignRef, {
-            'id': likesCampaignRef.id,
-            'userId': user.uid,
-            'instagramLink': link,
-            'goal': 'likes',
-            'quantity': 100,
-            'completedCount': 0,
-            'totalCost': 0,
-            'createdAt': FieldValue.serverTimestamp(),
-            'status': 'active',
-          });
+        // Create Followers campaign (cost = cost)
+        transaction.set(campaignRef, {
+          'id': campaignRef.id,
+          'userId': user.uid,
+          'instagramLink': link,
+          'goal': 'followers',
+          'quantity': qty,
+          'completedCount': 0,
+          'totalCost': cost,
+          'createdAt': FieldValue.serverTimestamp(),
+          'status': 'active',
+        });
 
-          // Record activity log
-          transaction.set(activityRef, {
-            'id': activityRef.id,
-            'title': 'Campaign Created',
-            'description': 'Combo Pack (100 Likes & 30 Followers)',
-            'coins': 75,
-            'type': 'spent',
-            'timestamp': FieldValue.serverTimestamp(),
-          });
-        } else {
-          // Growth Pack: 750 Followers (cost = 100)
-          transaction.set(campaignRef, {
-            'id': campaignRef.id,
-            'userId': user.uid,
-            'instagramLink': link,
-            'goal': 'followers',
-            'quantity': 750,
-            'completedCount': 0,
-            'totalCost': 100,
-            'createdAt': FieldValue.serverTimestamp(),
-            'status': 'active',
-          });
-
-          // Record activity log
-          transaction.set(activityRef, {
-            'id': activityRef.id,
-            'title': 'Campaign Created',
-            'description': 'Growth Pack (750 Followers)',
-            'coins': 100,
-            'type': 'spent',
-            'timestamp': FieldValue.serverTimestamp(),
-          });
-        }
+        // Record activity log
+        transaction.set(activityRef, {
+          'id': activityRef.id,
+          'title': 'Campaign Created',
+          'description': _selectedPackage == 0
+              ? 'Combo Pack (200 Followers)'
+              : 'Growth Pack (500 Followers)',
+          'coins': cost,
+          'type': 'spent',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
       });
 
       if (mounted) {
@@ -290,9 +254,9 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Text(
-                              '100 Likes &\n30+ Followers',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                             Text(
+                              '200 Followers\n(Likes & Views Free)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary),
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -342,16 +306,16 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Text(
-                              '750 Followers\n(Likes & Views Free)',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                             Text(
+                              '500 Followers\n(Likes & Views Free)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary),
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
                                 const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 16),
-                                const Text(
-                                  '100',
+                                 const Text(
+                                  '150',
                                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.primary),
                                 ),
                               ],
