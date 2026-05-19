@@ -36,6 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^8.1.0
   lucide_icons: ^0.257.0
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
+  cloud_firestore: ^6.4.1
+  google_sign_in: ^6.2.1
+  shared_preferences: ^2.5.5
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
