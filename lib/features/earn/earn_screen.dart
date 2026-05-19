@@ -71,6 +71,8 @@ class _EarnScreenState extends State<EarnScreen> {
             await prefs.setDouble('cache_coins_${user.uid}', coins);
           } catch (_) {}
         }
+      }, onError: (error) {
+        debugPrint('EarnScreen user subscription error: $error');
       });
     }
   }
@@ -994,120 +996,204 @@ class _EarnScreenState extends State<EarnScreen> {
                         final task = tasks[index];
                         final bool isSponsor = task['isSponsor'] ?? false;
 
-                        IconData icon;
                         String title;
                         String subtitle;
                         double reward = 1.0;
 
                         if (isSponsor) {
-                          icon = LucideIcons.megaphone;
                           title = task['businessName'] ?? 'Sponsored Ad';
                           subtitle = task['headline'] ?? 'Visit & earn coins';
                           reward = 1.0;
                         } else {
-                          icon = LucideIcons.userPlus;
                           title = 'Follow Instagram Creator';
                           subtitle = 'Tap to complete task';
                           reward = 0.20;
                         }
 
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16.0),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {
-                              if (isSponsor) {
-                                _launchURL(task['websiteLink'] ?? '');
-                                _showSponsorDetailsDialog(task);
-                              } else {
-                                if (_hasSeenFollowWarning) {
-                                  _launchURL(task['instagramLink'] ?? '');
-                                  _showVerificationDialog(task);
-                                } else {
-                                  _showFollowWarningDialog(task);
-                                }
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: (isSponsor ? AppTheme.secondary : AppTheme.primary).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(icon, color: isSponsor ? AppTheme.secondary : AppTheme.primary, size: 28),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                title,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                              ),
-                                            ),
-                                            if (isSponsor) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.secondary.withOpacity(0.15),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                  border: Border.all(color: AppTheme.secondary.withOpacity(0.3), width: 1),
-                                                ),
-                                                child: Text(
-                                                  'Sponsor',
-                                                  style: TextStyle(
-                                                    color: AppTheme.secondary,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          subtitle,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                        final String creatorId = task['userId'] ?? '';
+
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance.collection('users').doc(creatorId).get(),
+                          builder: (context, userSnapshot) {
+                            String creatorName = 'Creator';
+                            String? creatorPhotoUrl;
+
+                            if (userSnapshot.hasData && userSnapshot.data != null && userSnapshot.data!.exists) {
+                              final userData = userSnapshot.data!.data() as Map<String, dynamic>?;
+                              creatorName = userData?['name'] ?? 'Creator';
+                              creatorPhotoUrl = userData?['photoUrl'] ?? userData?['photoURL'];
+                            }
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 16.0),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  if (isSponsor) {
+                                    _launchURL(task['websiteLink'] ?? '');
+                                    _showSponsorDetailsDialog(task);
+                                  } else {
+                                    if (_hasSeenFollowWarning) {
+                                      _launchURL(task['instagramLink'] ?? '');
+                                      _showVerificationDialog(task);
+                                    } else {
+                                      _showFollowWarningDialog(task);
+                                    }
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Reward', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                                      const SizedBox(height: 4),
+                                      // Creator Profile Header
                                       Row(
                                         children: [
-                                          const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 14),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '+₹${reward.toStringAsFixed(2)}',
-                                            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16),
+                                          CircleAvatar(
+                                            radius: 18,
+                                            backgroundColor: AppTheme.primary.withOpacity(0.1),
+                                            backgroundImage: creatorPhotoUrl != null ? NetworkImage(creatorPhotoUrl) : null,
+                                            child: creatorPhotoUrl == null
+                                                ? const Icon(LucideIcons.user, size: 16, color: AppTheme.primary)
+                                                : null,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              creatorName,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: AppTheme.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // Prominent Badge
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: isSponsor 
+                                                  ? AppTheme.secondary.withOpacity(0.15) 
+                                                  : AppTheme.primary.withOpacity(0.15),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: isSponsor 
+                                                    ? AppTheme.secondary.withOpacity(0.3) 
+                                                    : AppTheme.primary.withOpacity(0.3),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              isSponsor ? 'SPONSOR' : 'FOLLOW TASK',
+                                              style: TextStyle(
+                                                color: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                                      const SizedBox(height: 12),
+
+                                      // Campaign Content
+                                      Text(
+                                        title,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        subtitle,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondary,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // Footer Actions
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          // Reward
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Reward',
+                                                style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 14),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '+₹${reward.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                      color: AppTheme.primary,
+                                                      fontWeight: FontWeight.w900,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          // Action button
+                                          ElevatedButton.icon(
+                                            onPressed: () {
+                                              if (isSponsor) {
+                                                _launchURL(task['websiteLink'] ?? '');
+                                                _showSponsorDetailsDialog(task);
+                                              } else {
+                                                if (_hasSeenFollowWarning) {
+                                                  _launchURL(task['instagramLink'] ?? '');
+                                                  _showVerificationDialog(task);
+                                                } else {
+                                                  _showFollowWarningDialog(task);
+                                                }
+                                              }
+                                            },
+                                            icon: Icon(
+                                              isSponsor ? LucideIcons.externalLink : LucideIcons.userPlus,
+                                              size: 14,
+                                              color: Colors.white,
+                                            ),
+                                            label: Text(
+                                              isSponsor ? 'Visit Ad' : 'Follow',
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              elevation: 0,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ],
-                                  )
-                                ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         );
                       },
                     );
