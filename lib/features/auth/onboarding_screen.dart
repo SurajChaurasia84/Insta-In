@@ -86,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'email': user.email ?? '',
           'photoUrl': user.photoURL ?? '',
           'createdAt': FieldValue.serverTimestamp(),
-          'coins': 100, // Welcome bonus coins!
+          'coins': 0.0, 
         }, SetOptions(merge: true));
 
         // 6. Save onboarding completed flag to SharedPreferences
@@ -223,8 +223,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         children: [
                           ElevatedButton.icon(
                             onPressed: _signInWithGoogle,
-                            icon: const Icon(LucideIcons.chrome, size: 20),
-                            label: const Text('Sign in with Google'),
+                            icon: Image.asset(
+                              'assets/google_logo.png',
+                              height: 20,
+                              width: 20,
+                            ),
+                            label: const Text(
+                              'Sign in with Google',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
