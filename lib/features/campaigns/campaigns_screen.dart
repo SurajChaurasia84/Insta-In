@@ -72,6 +72,8 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
         return data;
       }).toList();
       updateCombinedList();
+    }, onError: (error) {
+      debugPrint('CampaignsScreen campaigns subscription error: $error');
     });
 
     _sponsorsSubscription = FirebaseFirestore.instance
@@ -85,6 +87,8 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
         return data;
       }).toList();
       updateCombinedList();
+    }, onError: (error) {
+      debugPrint('CampaignsScreen sponsors subscription error: $error');
     });
   }
 

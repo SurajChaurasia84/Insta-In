@@ -30,7 +30,21 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
   Future<void> _createCampaign() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final String link = _linkController.text.trim();
+    String link = _linkController.text.trim();
+    
+    // Normalize link or username to a valid Instagram URL
+    if (!link.startsWith('http://') && !link.startsWith('https://')) {
+      if (link.contains('instagram.com/')) {
+        link = 'https://$link';
+      } else {
+        // Strip leading '@' if present
+        if (link.startsWith('@')) {
+          link = link.substring(1);
+        }
+        link = 'https://instagram.com/$link';
+      }
+    }
+
     final int cost = _totalCost;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
