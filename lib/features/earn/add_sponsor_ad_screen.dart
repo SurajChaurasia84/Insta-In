@@ -18,10 +18,10 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
   final _descriptionController = TextEditingController();
   final _linkController = TextEditingController();
   
-  int _selectedPackage = 0; // 0 for Starter Promo (150 Rs), 1 for Business Grow (300 Rs)
+  int _selectedPackage = 0; // 0 for Starter Promo (150 Rs), 1 for Business Grow (400 Rs)
   bool _isCreating = false;
 
-  int get _totalCost => _selectedPackage == 0 ? 150 : 300;
+  int get _totalCost => _selectedPackage == 0 ? 150 : 400;
   int get _quantity => _selectedPackage == 0 ? 100 : 250;
 
   @override
@@ -333,7 +333,7 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
                               children: [
                                 const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 16),
                                 const Text(
-                                  '300',
+                                  '400',
                                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primary),
                                 ),
                               ],
