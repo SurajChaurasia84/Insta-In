@@ -154,7 +154,7 @@ class _EarnScreenState extends State<EarnScreen> {
         Navigator.pop(context); // Close dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🎉 Claimed +$reward coins successfully!'),
+            content: Text('🎉 Claimed +₹$reward successfully!'),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -196,12 +196,12 @@ class _EarnScreenState extends State<EarnScreen> {
             return AlertDialog(
               backgroundColor: AppTheme.surface,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Verify Task Completion', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              title: Text('Verify Task Completion', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Step 1: Open Instagram and complete the task.',
                     style: TextStyle(color: AppTheme.textSecondary),
                   ),
@@ -212,17 +212,17 @@ class _EarnScreenState extends State<EarnScreen> {
                     label: const Text('Open Instagram Link', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary)),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Step 2: Confirm after completion to claim your reward.',
                     style: TextStyle(color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(LucideIcons.coins, color: Colors.amber, size: 20),
+                      const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Reward: +$reward Coins',
+                        'Reward: +₹$reward',
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: 16),
                       ),
                     ],
@@ -232,7 +232,7 @@ class _EarnScreenState extends State<EarnScreen> {
               actions: [
                 TextButton(
                   onPressed: _isClaiming ? null : () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+                  child: Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
                 ),
                 ElevatedButton(
                   onPressed: _isClaiming
@@ -273,15 +273,17 @@ class _EarnScreenState extends State<EarnScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: false,
+        title: const Text('Insta.In ', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Chip(
-              backgroundColor: AppTheme.primary.withOpacity(0.2),
-              avatar: const Icon(LucideIcons.coins, color: Colors.amber, size: 18),
-              label: Text('$_coins', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber)),
-              side: BorderSide.none,
+              backgroundColor: AppTheme.surface,
+              avatar: const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 18),
+              label: Text('$_coins', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+              side: BorderSide(color: AppTheme.primary.withOpacity(0.2)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
           )
         ],
@@ -327,12 +329,12 @@ class _EarnScreenState extends State<EarnScreen> {
                       child: const Icon(LucideIcons.partyPopper, size: 48, color: AppTheme.primary),
                     ),
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       'No active tasks available!',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Check back later! Other creators will publish new campaigns soon.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
@@ -351,7 +353,6 @@ class _EarnScreenState extends State<EarnScreen> {
               final task = taskDoc.data() as Map<String, dynamic>;
 
               final String goal = task['goal'] ?? 'views';
-              final String instagramLink = task['instagramLink'] ?? '';
 
               IconData icon;
               String title;
@@ -398,7 +399,7 @@ class _EarnScreenState extends State<EarnScreen> {
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 'Tap to complete task',
                                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                               ),
@@ -408,14 +409,14 @@ class _EarnScreenState extends State<EarnScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text('Reward', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                            Text('Reward', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(LucideIcons.coins, color: Colors.amber, size: 14),
+                                const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 14),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '+$reward',
+                                  '+₹$reward',
                                   style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                               ],
