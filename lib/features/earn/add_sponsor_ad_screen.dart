@@ -175,6 +175,7 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _businessNameController,
+                textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   hintText: 'e.g. Sharma Sweets & Cafe',
                   prefixIcon: Icon(LucideIcons.store),
@@ -191,6 +192,7 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _headlineController,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   hintText: 'e.g. Get 20% off on all sweets today!',
                   prefixIcon: Icon(LucideIcons.sparkles),
@@ -207,6 +209,7 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _descriptionController,
+                textCapitalization: TextCapitalization.sentences,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: 'Describe your business or offer in detail...',
@@ -225,7 +228,7 @@ class _AddSponsorAdScreenState extends State<AddSponsorAdScreen> {
               TextFormField(
                 controller: _linkController,
                 decoration: const InputDecoration(
-                  hintText: 'https://maps.google.com/?q=... or website URL',
+                  hintText: 'Enter or paste URL',
                   prefixIcon: Icon(LucideIcons.navigation),
                 ),
                 validator: (value) {
