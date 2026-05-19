@@ -190,7 +190,7 @@ class AppInfoScreen extends StatelessWidget {
                         ListTile(
                           leading: const Icon(LucideIcons.mail, color: AppTheme.primary, size: 20),
                           title: const Text('Contact Support', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                          subtitle: const Text('jaswantsingh777705@gmail.com', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          subtitle: const Text('ja*****@gmail.com', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                           trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
                           onTap: _launchEmail,
                         ),
