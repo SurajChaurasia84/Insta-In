@@ -16,7 +16,7 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  int _coins = 0;
+  double _coins = 0.0;
   StreamSubscription<DocumentSnapshot>? _userSubscription;
 
   @override
@@ -38,7 +38,7 @@ class _WalletScreenState extends State<WalletScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         setState(() {
-          _coins = prefs.getInt('cache_coins_${user.uid}') ?? 0;
+          _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
         });
       }
     } catch (_) {}
@@ -53,7 +53,7 @@ class _WalletScreenState extends State<WalletScreen> {
           .snapshots()
           .listen((snapshot) async {
         if (snapshot.exists && snapshot.data() != null) {
-          final int coins = snapshot.data()!['coins'] ?? 0;
+          final double coins = (snapshot.data()!['coins'] ?? 0).toDouble();
           if (mounted) {
             setState(() {
               _coins = coins;
@@ -61,7 +61,7 @@ class _WalletScreenState extends State<WalletScreen> {
           }
           try {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('cache_coins_${user.uid}', coins);
+            await prefs.setDouble('cache_coins_${user.uid}', coins);
           } catch (_) {}
         }
       });
@@ -140,7 +140,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 36),
                         const SizedBox(width: 12),
                         Text(
-                          '$_coins',
+                          _coins.toStringAsFixed(2),
                           style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900),
                         ),
                       ],
@@ -249,7 +249,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     final String title = data['title'] ?? 'Activity Log';
                     final String description = data['description'] ?? '';
                     final String type = data['type'] ?? 'earned';
-                    final int coins = data['coins'] ?? 0;
+                    final double coins = (data['coins'] ?? 0).toDouble();
                     final Timestamp? timestamp = data['timestamp'] as Timestamp?;
                     
                     final String formattedTime = _formatTimestamp(timestamp);
@@ -275,7 +275,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                         ),
                         trailing: Text(
-                          '${isEarned ? '+' : '-'}₹$coins',
+                          '${isEarned ? '+' : '-'}₹${coins.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: isEarned ? AppTheme.success : AppTheme.error,
                             fontWeight: FontWeight.bold,

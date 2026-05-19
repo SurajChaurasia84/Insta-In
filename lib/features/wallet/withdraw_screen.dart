@@ -6,7 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:insta_in/features/profile/edit_profile_screen.dart';
 
 class WithdrawScreen extends StatefulWidget {
-  final int currentBalance;
+  final double currentBalance;
   
   const WithdrawScreen({super.key, required this.currentBalance});
 
@@ -105,7 +105,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           throw Exception('User profile not found.');
         }
 
-        final int currentCoins = userSnapshot.data()?['coins'] ?? 0;
+        final double currentCoins = (userSnapshot.data()?['coins'] ?? 0).toDouble();
         if (amount > currentCoins) {
           throw Exception('Not enough balance!');
         }
