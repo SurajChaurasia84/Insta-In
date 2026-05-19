@@ -24,9 +24,12 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _displayName = 'Insta In User';
   int _campaignsCount = 0;
+  int _sponsorAdsCount = 0;
   int _completedCount = 0;
   double _coins = 0.0;
   StreamSubscription<DocumentSnapshot>? _userSubscription;
+  StreamSubscription<QuerySnapshot>? _campaignsSubscription;
+  StreamSubscription<QuerySnapshot>? _sponsorAdsSubscription;
 
   @override
   void initState() {
@@ -38,6 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     _userSubscription?.cancel();
+    _campaignsSubscription?.cancel();
+    _sponsorAdsSubscription?.cancel();
     super.dispose();
   }
 
@@ -50,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _displayName = prefs.getString('cache_name_${user.uid}') ?? user.displayName ?? 'Insta In User';
           _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
           _campaignsCount = prefs.getInt('cache_campaigns_${user.uid}') ?? 0;
+          _sponsorAdsCount = prefs.getInt('cache_sponsors_${user.uid}') ?? 0;
           _completedCount = prefs.getInt('cache_completed_${user.uid}') ?? 0;
         });
       }
@@ -68,14 +74,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final data = snapshot.data()!;
           final String name = data['name'] ?? user.displayName ?? 'Insta In User';
           final double coins = (data['coins'] ?? 0).toDouble();
-          final int campaigns = data['campaignsCount'] ?? data['campaigns'] ?? 0;
           final int completed = data['completedCount'] ?? data['completed'] ?? 0;
 
           if (mounted) {
             setState(() {
               _displayName = name;
               _coins = coins;
-              _campaignsCount = campaigns;
               _completedCount = completed;
             });
           }
@@ -85,10 +89,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('cache_name_${user.uid}', name);
             await prefs.setDouble('cache_coins_${user.uid}', coins);
-            await prefs.setInt('cache_campaigns_${user.uid}', campaigns);
             await prefs.setInt('cache_completed_${user.uid}', completed);
           } catch (_) {}
         }
+      });
+
+      _campaignsSubscription = FirebaseFirestore.instance
+          .collection('campaigns')
+          .where('userId', isEqualTo: user.uid)
+          .snapshots()
+          .listen((snapshot) {
+        if (mounted) {
+          setState(() {
+            _campaignsCount = snapshot.docs.length;
+          });
+        }
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setInt('cache_campaigns_${user.uid}', snapshot.docs.length);
+        }).catchError((_) {});
+      });
+
+      _sponsorAdsSubscription = FirebaseFirestore.instance
+          .collection('sponsor_ads')
+          .where('userId', isEqualTo: user.uid)
+          .snapshots()
+          .listen((snapshot) {
+        if (mounted) {
+          setState(() {
+            _sponsorAdsCount = snapshot.docs.length;
+          });
+        }
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setInt('cache_sponsors_${user.uid}', snapshot.docs.length);
+        }).catchError((_) {});
       });
     }
   }
@@ -296,14 +329,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Statistics Row
-            Row(
+            // Statistics Grid (2x2)
+            Column(
               children: [
-                _buildStatItem(context, '$_campaignsCount', 'Campaigns'),
-                const SizedBox(width: 12),
-                _buildStatItem(context, '$_completedCount', 'Completed'),
-                const SizedBox(width: 12),
-                _buildStatItem(context, '₹${_coins.toStringAsFixed(2)}', 'Balance'),
+                Row(
+                  children: [
+                    _buildStatItem(context, '$_campaignsCount', 'My Campaigns'),
+                    const SizedBox(width: 12),
+                    _buildStatItem(context, '$_sponsorAdsCount', 'My Sponsors'),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildStatItem(context, '$_completedCount', 'Completed'),
+                    const SizedBox(width: 12),
+                    _buildStatItem(context, '₹${_coins.toStringAsFixed(2)}', 'Total Balance'),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -389,10 +432,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               value,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.primary),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               label,
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ],
         ),
