@@ -1,13 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:insta_in/core/theme.dart';
-import 'package:insta_in/features/auth/auth_screen.dart';
+import 'package:insta_in/features/auth/onboarding_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _logout(BuildContext context) async {
+    try {
+      // 1. Sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+      
+      // 2. Sign out from Google
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+
+      if (context.mounted) {
+        // 3. Navigate back to OnboardingScreen (which holds the Google Login)
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -23,10 +51,41 @@ class ProfileScreen extends StatelessWidget {
                   Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: AppTheme.primary.withOpacity(0.2),
-                        child: const Icon(LucideIcons.user, size: 50, color: AppTheme.primary),
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.primary.withOpacity(0.2),
+                        ),
+                        child: ClipOval(
+                          child: user?.photoURL != null
+                              ? Image.network(
+                                  user!.photoURL!,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppTheme.primary,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      LucideIcons.user,
+                                      size: 50,
+                                      color: AppTheme.primary,
+                                    );
+                                  },
+                                )
+                              : const Icon(
+                                  LucideIcons.user,
+                                  size: 50,
+                                  color: AppTheme.primary,
+                                ),
+                        ),
                       ),
                       Container(
                         padding: const EdgeInsets.all(6),
@@ -39,14 +98,14 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Suraj Chaurasia',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  Text(
+                    user?.displayName ?? 'Insta In User',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'suraj@example.com',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  Text(
+                    user?.email ?? 'user@instain.com',
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
               ),
@@ -88,14 +147,16 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const Divider(color: Colors.white10, height: 1),
                   _buildMenuItem(
+                    icon: LucideIcons.helpCircle,
+                    title: 'Privacy Policy',
+                    onTap: () {},
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
                     icon: LucideIcons.logOut,
                     title: 'Log Out',
                     color: AppTheme.error,
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const AuthScreen()),
-                      );
-                    },
+                    onTap: () => _logout(context),
                   ),
                 ],
               ),

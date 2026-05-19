@@ -3,6 +3,7 @@ import 'package:insta_in/features/campaigns/add_campaign_screen.dart';
 import 'package:insta_in/features/campaigns/campaigns_screen.dart';
 import 'package:insta_in/features/earn/earn_screen.dart';
 import 'package:insta_in/features/wallet/wallet_screen.dart';
+import 'package:insta_in/features/profile/profile_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -20,6 +21,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     CampaignsScreen(),
     AddCampaignScreen(),
     WalletScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -49,6 +51,10 @@ class _MainScaffoldState extends State<MainScaffold> {
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.wallet),
             label: 'Wallet',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.user),
+            label: 'Profile',
           ),
         ],
       ),
