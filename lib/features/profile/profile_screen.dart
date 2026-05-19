@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _displayName = 'Insta In User';
   int _campaignsCount = 0;
   int _completedCount = 0;
-  int _coins = 0;
+  double _coins = 0.0;
   StreamSubscription<DocumentSnapshot>? _userSubscription;
 
   @override
@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (user != null) {
         setState(() {
           _displayName = prefs.getString('cache_name_${user.uid}') ?? user.displayName ?? 'Insta In User';
-          _coins = prefs.getInt('cache_coins_${user.uid}') ?? 0;
+          _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
           _campaignsCount = prefs.getInt('cache_campaigns_${user.uid}') ?? 0;
           _completedCount = prefs.getInt('cache_completed_${user.uid}') ?? 0;
         });
@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (snapshot.exists && snapshot.data() != null) {
           final data = snapshot.data()!;
           final String name = data['name'] ?? user.displayName ?? 'Insta In User';
-          final int coins = data['coins'] ?? 0;
+          final double coins = (data['coins'] ?? 0).toDouble();
           final int campaigns = data['campaignsCount'] ?? data['campaigns'] ?? 0;
           final int completed = data['completedCount'] ?? data['completed'] ?? 0;
 
@@ -84,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           try {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('cache_name_${user.uid}', name);
-            await prefs.setInt('cache_coins_${user.uid}', coins);
+            await prefs.setDouble('cache_coins_${user.uid}', coins);
             await prefs.setInt('cache_campaigns_${user.uid}', campaigns);
             await prefs.setInt('cache_completed_${user.uid}', completed);
           } catch (_) {}
@@ -303,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(width: 12),
                 _buildStatItem(context, '$_completedCount', 'Completed'),
                 const SizedBox(width: 12),
-                _buildStatItem(context, '₹$_coins', 'Balance'),
+                _buildStatItem(context, '₹${_coins.toStringAsFixed(2)}', 'Balance'),
               ],
             ),
             const SizedBox(height: 32),

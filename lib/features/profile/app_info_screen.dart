@@ -8,13 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 class AppInfoScreen extends StatelessWidget {
   const AppInfoScreen({super.key});
 
-  Future<void> _launchURL(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    try {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-  }
-
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',

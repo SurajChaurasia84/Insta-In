@@ -117,7 +117,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
             final String title = data['title'] ?? 'Activity Log';
             final String description = data['description'] ?? '';
             final String type = data['type'] ?? 'earned';
-            final int coins = data['coins'] ?? 0;
+            final double coins = (data['coins'] ?? 0).toDouble();
             final Timestamp? timestamp = data['timestamp'] as Timestamp?;
             
             final String formattedTime = _formatTimestamp(timestamp);
@@ -178,7 +178,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${isEarned ? "+" : "-"}₹$coins',
+                      '${isEarned ? "+" : "-"}₹${coins.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 15,
