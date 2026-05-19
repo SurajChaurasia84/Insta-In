@@ -19,7 +19,10 @@ class EarnScreen extends StatefulWidget {
 class _EarnScreenState extends State<EarnScreen> {
   bool _isClaiming = false;
   double _coins = 0.0;
+  bool _hasSeenFollowWarning = false;
   StreamSubscription<DocumentSnapshot>? _userSubscription;
+  final PageController _bannerController = PageController(viewportFraction: 0.9);
+  int _currentBannerPage = 0;
 
   @override
   void initState() {
@@ -30,6 +33,7 @@ class _EarnScreenState extends State<EarnScreen> {
 
   @override
   void dispose() {
+    _bannerController.dispose();
     _userSubscription?.cancel();
     super.dispose();
   }
@@ -41,6 +45,7 @@ class _EarnScreenState extends State<EarnScreen> {
       if (user != null) {
         setState(() {
           _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
+          _hasSeenFollowWarning = prefs.getBool('has_seen_follow_warning') ?? false;
         });
       }
     } catch (_) {}
@@ -363,6 +368,74 @@ class _EarnScreenState extends State<EarnScreen> {
     );
   }
 
+  Future<void> _showFollowWarningDialog(Map<String, dynamic> task) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(LucideIcons.alertTriangle, color: Color(0xFFF59E0B), size: 28),
+              SizedBox(width: 10),
+              Text(
+                'Fair Play Rule! ⚠️',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'To maintain a fair community, please read carefully:',
+                style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '• Do not unfollow creators after claiming rewards.\n'
+                '• All follows are verified during coin withdrawals.\n'
+                '• Fake claims or unfollowing will result in immediate account ban and loss of all earnings.',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.5),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('has_seen_follow_warning', true);
+                if (mounted) {
+                  setState(() {
+                    _hasSeenFollowWarning = true;
+                  });
+                }
+                Navigator.of(context).pop();
+                // Proceed to task
+                _launchURL(task['instagramLink'] ?? '');
+                _showVerificationDialog(task);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: const Text('I Understand & Agree', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showSponsorDetailsDialog(Map<String, dynamic> ad) {
     showDialog(
       context: context,
@@ -522,65 +595,161 @@ class _EarnScreenState extends State<EarnScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Premium Ad Promotion Banner
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFEC4899).withOpacity(0.2),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Promote Your Business! 📢',
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Sponsor your shop, brand, website, or channel and get real local visits.',
-                          style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AddSponsorAdScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF8B5CF6),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+            // Premium Ad Promotion PageView Banner
+            StatefulBuilder(
+              builder: (context, setBannerState) {
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: 165,
+                      child: PageView(
+                        controller: _bannerController,
+                        onPageChanged: (index) {
+                          setBannerState(() {
+                            _currentBannerPage = index;
+                          });
+                        },
+                        children: [
+                          // Banner 1: Promote Your Business
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFEC4899).withOpacity(0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Promote Your Business! 📢',
+                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text(
+                                        'Sponsor your shop, brand, website, or channel and get real local visits.',
+                                        style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const AddSponsorAdScreen()),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: const Color(0xFF8B5CF6),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        child: const Text('Create Sponsor Ad', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: const Text('Create Sponsor Ad', style: TextStyle(fontWeight: FontWeight.bold)),
-                        )
-                      ],
+                          // Banner 2: Join WhatsApp Channel
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF047857)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withOpacity(0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Join WhatsApp Channel! 💬',
+                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text(
+                                        'Join our official channel for updates, bonuses, and priority support.',
+                                        style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () => _launchURL('https://whatsapp.com/channel/0029Va90d6jD38PaeU1vM90U'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: const Color(0xFF10B981),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        child: const Text('Join Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    // Page indicator dots underneath the banners
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(2, (index) {
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: _currentBannerPage == index ? 16 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _currentBannerPage == index ? AppTheme.primary : AppTheme.textSecondary.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
             ),
 
             // Sponsored Ads Row
@@ -851,8 +1020,12 @@ class _EarnScreenState extends State<EarnScreen> {
                                 _launchURL(task['websiteLink'] ?? '');
                                 _showSponsorDetailsDialog(task);
                               } else {
-                                _launchURL(task['instagramLink'] ?? '');
-                                _showVerificationDialog(task);
+                                if (_hasSeenFollowWarning) {
+                                  _launchURL(task['instagramLink'] ?? '');
+                                  _showVerificationDialog(task);
+                                } else {
+                                  _showFollowWarningDialog(task);
+                                }
                               }
                             },
                             child: Padding(
