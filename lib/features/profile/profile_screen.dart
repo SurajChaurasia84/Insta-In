@@ -92,6 +92,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             await prefs.setInt('cache_completed_${user.uid}', completed);
           } catch (_) {}
         }
+      }, onError: (error) {
+        debugPrint('User subscription error: $error');
       });
 
       _campaignsSubscription = FirebaseFirestore.instance
@@ -107,6 +109,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         SharedPreferences.getInstance().then((prefs) {
           prefs.setInt('cache_campaigns_${user.uid}', snapshot.docs.length);
         }).catchError((_) {});
+      }, onError: (error) {
+        debugPrint('Campaigns subscription error: $error');
       });
 
       _sponsorAdsSubscription = FirebaseFirestore.instance
@@ -122,12 +126,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         SharedPreferences.getInstance().then((prefs) {
           prefs.setInt('cache_sponsors_${user.uid}', snapshot.docs.length);
         }).catchError((_) {});
+      }, onError: (error) {
+        debugPrint('Sponsor ads subscription error: $error');
       });
     }
   }
 
   Future<void> _logout() async {
     try {
+      // Cancel subscriptions first to prevent permission-denied exceptions on sign-out
+      await _userSubscription?.cancel();
+      await _campaignsSubscription?.cancel();
+      await _sponsorAdsSubscription?.cancel();
+      _userSubscription = null;
+      _campaignsSubscription = null;
+      _sponsorAdsSubscription = null;
+
       // 1. Sign out from Firebase
       await FirebaseAuth.instance.signOut();
       
