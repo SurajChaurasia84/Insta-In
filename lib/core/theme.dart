@@ -34,6 +34,8 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: textPrimary),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: surface,
@@ -44,6 +46,7 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: surface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: EdgeInsets.zero,
