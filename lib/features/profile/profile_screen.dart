@@ -10,6 +10,8 @@ import 'package:insta_in/features/profile/activity_history_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,6 +21,77 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String _displayName = 'Insta In User';
+  int _campaignsCount = 0;
+  int _completedCount = 0;
+  int _coins = 0;
+  StreamSubscription<DocumentSnapshot>? _userSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedUserData();
+    _subscribeToUserData();
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadCachedUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        setState(() {
+          _displayName = prefs.getString('cache_name_${user.uid}') ?? user.displayName ?? 'Insta In User';
+          _coins = prefs.getInt('cache_coins_${user.uid}') ?? 0;
+          _campaignsCount = prefs.getInt('cache_campaigns_${user.uid}') ?? 0;
+          _completedCount = prefs.getInt('cache_completed_${user.uid}') ?? 0;
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _subscribeToUserData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userSubscription = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .listen((snapshot) async {
+        if (snapshot.exists && snapshot.data() != null) {
+          final data = snapshot.data()!;
+          final String name = data['name'] ?? user.displayName ?? 'Insta In User';
+          final int coins = data['coins'] ?? 0;
+          final int campaigns = data['campaignsCount'] ?? data['campaigns'] ?? 0;
+          final int completed = data['completedCount'] ?? data['completed'] ?? 0;
+
+          if (mounted) {
+            setState(() {
+              _displayName = name;
+              _coins = coins;
+              _campaignsCount = campaigns;
+              _completedCount = completed;
+            });
+          }
+
+          // Cache the updated values in SharedPreferences
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('cache_name_${user.uid}', name);
+            await prefs.setInt('cache_coins_${user.uid}', coins);
+            await prefs.setInt('cache_campaigns_${user.uid}', campaigns);
+            await prefs.setInt('cache_completed_${user.uid}', completed);
+          } catch (_) {}
+        }
+      });
+    }
+  }
+
   Future<void> _logout() async {
     try {
       // 1. Sign out from Firebase
@@ -105,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MaterialPageRoute(builder: (_) => const EditProfileScreen()),
     );
     if (updated == true) {
-      setState(() {});
+      _loadCachedUserData();
     }
   }
 
@@ -144,169 +217,157 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection('users').doc(user?.uid).snapshots(),
-        builder: (context, snapshot) {
-          final userData = snapshot.data?.data() as Map<String, dynamic>?;
-          
-          final String displayName = userData?['name'] ?? user?.displayName ?? 'Insta In User';
-          final int campaignsCount = userData?['campaignsCount'] ?? userData?['campaigns'] ?? 0;
-          final int completedCount = userData?['completedCount'] ?? userData?['completed'] ?? 0;
-          final int coins = userData?['coins'] ?? 0;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // User Avatar & Info
-                Center(
-                  child: Column(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // User Avatar & Info
+            Center(
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          GestureDetector(
-                            onTap: _navigateToEditProfile,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppTheme.primary.withOpacity(0.2),
-                              ),
-                              child: ClipOval(
-                                child: user?.photoURL != null
-                                    ? Image.network(
-                                        user!.photoURL!,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: AppTheme.primary,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            LucideIcons.user,
-                                            size: 50,
-                                            color: AppTheme.primary,
-                                          );
-                                        },
-                                      )
-                                    : const Icon(
+                      GestureDetector(
+                        onTap: _navigateToEditProfile,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.primary.withOpacity(0.2),
+                          ),
+                          child: ClipOval(
+                            child: user?.photoURL != null
+                                ? Image.network(
+                                    user!.photoURL!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppTheme.primary,
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
                                         LucideIcons.user,
                                         size: 50,
                                         color: AppTheme.primary,
-                                      ),
-                              ),
-                            ),
+                                      );
+                                    },
+                                  )
+                                : const Icon(
+                                    LucideIcons.user,
+                                    size: 50,
+                                    color: AppTheme.primary,
+                                  ),
                           ),
-                          GestureDetector(
-                            onTap: _navigateToEditProfile,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: AppTheme.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(LucideIcons.pencil, size: 14, color: Colors.white),
-                            ),
-                          )
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        displayName,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? 'user@instain.com',
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Statistics Row
-                Row(
-                  children: [
-                    _buildStatItem(context, '$campaignsCount', 'Campaigns'),
-                    const SizedBox(width: 12),
-                    _buildStatItem(context, '$completedCount', 'Completed'),
-                    const SizedBox(width: 12),
-                    _buildStatItem(context, '$coins', 'Coins'),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // Menu Items Card
-                Card(
-                  child: Column(
-                    children: [
-                      _buildMenuItem(
-                        icon: LucideIcons.user,
-                        title: 'Edit Profile',
+                      GestureDetector(
                         onTap: _navigateToEditProfile,
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.history,
-                        title: 'Activity History',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ActivityHistoryScreen()),
-                          );
-                        },
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.helpCircle,
-                        title: 'Help & Support',
-                        onTap: _launchSupportEmail,
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.shield,
-                        title: 'Privacy Policy',
-                        onTap: _launchPrivacyPolicy,
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.share2,
-                        title: 'Share App',
-                        onTap: _shareApp,
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.info,
-                        title: 'App Info',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const AppInfoScreen()),
-                          );
-                        },
-                      ),
-                      const Divider(color: Colors.white10, height: 1),
-                      _buildMenuItem(
-                        icon: LucideIcons.logOut,
-                        title: 'Log Out',
-                        color: AppTheme.error,
-                        onTap: _showLogoutConfirmationDialog,
-                      ),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.pencil, size: 14, color: Colors.white),
+                        ),
+                      )
                     ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _displayName,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user?.email ?? 'user@instain.com',
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Statistics Row
+            Row(
+              children: [
+                _buildStatItem(context, '$_campaignsCount', 'Campaigns'),
+                const SizedBox(width: 12),
+                _buildStatItem(context, '$_completedCount', 'Completed'),
+                const SizedBox(width: 12),
+                _buildStatItem(context, '$_coins', 'Coins'),
               ],
             ),
-          );
-        },
+            const SizedBox(height: 32),
+
+            // Menu Items Card
+            Card(
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    icon: LucideIcons.user,
+                    title: 'Edit Profile',
+                    onTap: _navigateToEditProfile,
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.history,
+                    title: 'Activity History',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ActivityHistoryScreen()),
+                      );
+                    },
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.helpCircle,
+                    title: 'Help & Support',
+                    onTap: _launchSupportEmail,
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.shield,
+                    title: 'Privacy Policy',
+                    onTap: _launchPrivacyPolicy,
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.share2,
+                    title: 'Share App',
+                    onTap: _shareApp,
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.info,
+                    title: 'App Info',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AppInfoScreen()),
+                      );
+                    },
+                  ),
+                  const Divider(color: Colors.white10, height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.logOut,
+                    title: 'Log Out',
+                    color: AppTheme.error,
+                    onTap: _showLogoutConfirmationDialog,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
