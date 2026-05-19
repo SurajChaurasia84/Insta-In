@@ -11,6 +11,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 class ProfileScreen extends StatefulWidget {
@@ -125,10 +126,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(LucideIcons.logOut, color: AppTheme.error),
-              SizedBox(width: 8),
+              const Icon(LucideIcons.logOut, color: AppTheme.error),
+              const SizedBox(width: 8),
               Text(
                 'Logout',
                 style: TextStyle(
@@ -138,14 +139,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
-          content: const Text(
+          content: Text(
             'Are you sure you want to log out from Insta In?',
             style: TextStyle(color: AppTheme.textSecondary),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
+              child: Text(
                 'Cancel',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
@@ -283,12 +284,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   Text(
                     _displayName,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user?.email ?? 'user@instain.com',
-                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
               ),
@@ -302,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(width: 12),
                 _buildStatItem(context, '$_completedCount', 'Completed'),
                 const SizedBox(width: 12),
-                _buildStatItem(context, '$_coins', 'Coins'),
+                _buildStatItem(context, '₹$_coins', 'Balance'),
               ],
             ),
             const SizedBox(height: 32),
@@ -316,7 +317,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Edit Profile',
                     onTap: _navigateToEditProfile,
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                  _buildThemeToggleItem(),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.history,
                     title: 'Activity History',
@@ -327,25 +330,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.helpCircle,
                     title: 'Help & Support',
                     onTap: _launchSupportEmail,
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.shield,
                     title: 'Privacy Policy',
                     onTap: _launchPrivacyPolicy,
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.share2,
                     title: 'Share App',
                     onTap: _shareApp,
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.info,
                     title: 'App Info',
@@ -356,7 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
                     icon: LucideIcons.logOut,
                     title: 'Log Out',
@@ -389,10 +392,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeToggleItem() {
+    final bool isDark = AppTheme.themeNotifier.value == ThemeMode.dark;
+    return ListTile(
+      leading: Icon(
+        isDark ? LucideIcons.moon : LucideIcons.sun,
+        color: AppTheme.textSecondary,
+      ),
+      title: Text(
+        'Dark Mode',
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: AppTheme.textPrimary,
+        ),
+      ),
+      trailing: Switch(
+        value: isDark,
+        activeColor: AppTheme.primary,
+        onChanged: (bool value) async {
+          final newMode = value ? ThemeMode.dark : ThemeMode.light;
+          AppTheme.themeNotifier.value = newMode;
+          
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('is_light_mode', !value);
+          
+          SystemChrome.setSystemUIOverlayStyle(
+            SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: value ? Brightness.light : Brightness.dark,
+              statusBarBrightness: value ? Brightness.dark : Brightness.light,
+              systemNavigationBarColor: value ? const Color(0xFF1E293B) : const Color(0xFFFFFFFF),
+              systemNavigationBarIconBrightness: value ? Brightness.light : Brightness.dark,
+            ),
+          );
+
+          if (mounted) {
+            setState(() {});
+          }
+        },
       ),
     );
   }
@@ -409,10 +454,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title,
         style: TextStyle(
           fontWeight: FontWeight.w600,
-          color: color ?? Colors.white,
+          color: color ?? AppTheme.textPrimary,
         ),
       ),
-      trailing: const Icon(LucideIcons.chevronRight, size: 18, color: AppTheme.textSecondary),
+      trailing: Icon(LucideIcons.chevronRight, size: 18, color: AppTheme.textSecondary),
       onTap: onTap,
     );
   }

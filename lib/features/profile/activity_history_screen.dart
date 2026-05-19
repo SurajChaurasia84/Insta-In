@@ -45,7 +45,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppTheme.primary,
-          labelColor: Colors.white,
+          labelColor: AppTheme.textPrimary,
           unselectedLabelColor: AppTheme.textSecondary,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           tabs: const [
@@ -145,10 +145,10 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                 ),
                 title: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 subtitle: Column(
@@ -158,7 +158,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
@@ -178,7 +178,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${isEarned ? "+" : "-"}$coins',
+                      '${isEarned ? "+" : "-"}₹$coins',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 15,
@@ -187,7 +187,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                     ),
                     const SizedBox(width: 4),
                     const Icon(
-                      LucideIcons.coins,
+                      LucideIcons.indianRupee,
                       size: 16,
                       color: Colors.amber,
                     ),
@@ -203,13 +203,13 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
 
   Widget _buildEmptyState(String filter) {
     String message = 'No activities yet';
-    String description = 'Complete daily tasks or help others to earn coins!';
+    String description = 'Complete daily tasks or help others to earn money!';
     IconData icon = LucideIcons.history;
 
     if (filter == 'earned') {
-      message = 'No coins earned yet';
-      description = 'Complete peer tasks like following or liking others to start earning coins!';
-      icon = LucideIcons.coins;
+      message = 'No money earned yet';
+      description = 'Complete peer tasks like following or liking others to start earning money!';
+      icon = LucideIcons.indianRupee;
     } else if (filter == 'spent') {
       message = 'No campaigns launched yet';
       description = 'Launch your first campaign to boost your likes or followers!';
@@ -239,17 +239,17 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
             const SizedBox(height: 24),
             Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             Text(
               description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 color: AppTheme.textSecondary,
                 height: 1.5,
@@ -267,7 +267,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
     final date = timestamp.toDate();
     final now = DateTime.now();
     final difference = now.difference(date);
-
+ 
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inHours < 1) {

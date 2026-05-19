@@ -114,15 +114,15 @@ class AppInfoScreen extends StatelessWidget {
                 // App Name & Tagline
                 Text(
                   appName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Grow Your Instagram Community',
                   style: TextStyle(
                     fontSize: 14,
@@ -139,11 +139,11 @@ class AppInfoScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildInfoRow(context, 'App Name', appName, isLoading),
-                        const Divider(color: Colors.white10, height: 24),
+                        Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 24),
                         _buildInfoRow(context, 'Version', version, isLoading),
-                        const Divider(color: Colors.white10, height: 24),
+                        Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 24),
                         _buildInfoRow(context, 'Build Number', buildNumber, isLoading),
-                        const Divider(color: Colors.white10, height: 24),
+                        Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 24),
                         _buildInfoRow(context, 'Platform', platformName, false),
                       ],
                     ),
@@ -158,12 +158,12 @@ class AppInfoScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'About App',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -190,18 +190,18 @@ class AppInfoScreen extends StatelessWidget {
                         ListTile(
                           leading: const Icon(LucideIcons.mail, color: AppTheme.primary, size: 20),
                           title: const Text('Contact Support', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                          subtitle: const Text('ja*****@gmail.com', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                          trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
+                          subtitle: Text('ja*****@gmail.com', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                          trailing: Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
                           onTap: _launchEmail,
                         ),
-                        const Divider(color: Colors.white10, height: 1),
-                        ListTile(
-                          leading: const Icon(LucideIcons.globe, color: AppTheme.secondary, size: 20),
-                          title: const Text('Visit Website', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                          subtitle: const Text('instain-app.web.app', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                          trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
-                          onTap: () => _launchURL('https://instain-app.web.app'),
-                        ),
+                        // Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                        // ListTile(
+                        //   leading: const Icon(LucideIcons.globe, color: AppTheme.secondary, size: 20),
+                        //   title: const Text('Visit Website', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        //   subtitle: Text('instain-app.web.app', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                        //   trailing: Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
+                        //   onTap: () => _launchURL('https://instain-app.web.app'),
+                        // ),
                       ],
                     ),
                   ),
@@ -209,7 +209,7 @@ class AppInfoScreen extends StatelessWidget {
                 const SizedBox(height: 48),
 
                 // Footer Text
-                const Text(
+                Text(
                   'Made with ❤️ for Creators',
                   style: TextStyle(
                     fontSize: 12,
@@ -239,7 +239,7 @@ class AppInfoScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppTheme.textSecondary,
@@ -256,10 +256,10 @@ class AppInfoScreen extends StatelessWidget {
               )
             : Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                 ),
               ),
       ],

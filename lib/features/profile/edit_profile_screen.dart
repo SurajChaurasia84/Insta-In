@@ -15,6 +15,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _instagramController = TextEditingController();
+  final TextEditingController _upiIdController = TextEditingController();
+  final TextEditingController _upiNumberController = TextEditingController();
   bool _isLoading = false;
   bool _isSaving = false;
 
@@ -28,6 +30,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _instagramController.dispose();
+    _upiIdController.dispose();
+    _upiNumberController.dispose();
     super.dispose();
   }
 
@@ -44,6 +48,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           final data = doc.data()!;
           _nameController.text = data['name'] ?? user.displayName ?? '';
           _instagramController.text = data['instagram'] ?? '';
+          _upiIdController.text = data['upiId'] ?? '';
+          _upiNumberController.text = data['upiNumber'] ?? '';
         } else {
           _nameController.text = user.displayName ?? '';
         }
@@ -78,10 +84,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user != null) {
         final name = _nameController.text.trim();
         final instagram = _instagramController.text.trim();
+        final upiId = _upiIdController.text.trim();
+        final upiNumber = _upiNumberController.text.trim();
 
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'name': name,
           'instagram': instagram,
+          'upiId': upiId,
+          'upiNumber': upiNumber,
         }, SetOptions(merge: true));
 
         // Also update FirebaseAuth displayName locally
@@ -156,16 +166,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Update Your Information',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
+                          Text(
                             'Ensure your details are correct so other creators can find you.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -179,20 +189,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 36),
 
                     // Name Field
-                    const Text(
+                    Text(
                       'Display Name',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _nameController,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppTheme.textPrimary),
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Enter your full name',
                         prefixIcon: Icon(LucideIcons.user, size: 20, color: AppTheme.textSecondary),
                       ),
@@ -206,19 +216,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Instagram Username Field
-                    const Text(
+                    Text(
                       'Instagram Username / Account Link',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _instagramController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: AppTheme.textPrimary),
+                      decoration: InputDecoration(
                         hintText: 'e.g. @yourusername or instagram.com/user',
                         prefixIcon: Icon(LucideIcons.instagram, size: 20, color: AppTheme.textSecondary),
                       ),
@@ -228,6 +238,74 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 32),
+
+                    // UPI Details Section
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(LucideIcons.wallet, size: 20, color: AppTheme.primary),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Required for withdraw money',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // UPI ID Field
+                    Text(
+                      'UPI ID',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _upiIdController,
+                      style: TextStyle(color: AppTheme.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. yourname@upi',
+                        prefixIcon: Icon(LucideIcons.creditCard, size: 20, color: AppTheme.textSecondary),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // UPI Number Field
+                    Text(
+                      'UPI Number',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _upiNumberController,
+                      style: TextStyle(color: AppTheme.textPrimary),
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: 'Enter your UPI number',
+                        prefixIcon: Icon(LucideIcons.smartphone, size: 20, color: AppTheme.textSecondary),
+                      ),
                     ),
                     const SizedBox(height: 48),
 
