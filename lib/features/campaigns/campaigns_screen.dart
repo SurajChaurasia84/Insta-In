@@ -59,12 +59,12 @@ class CampaignsScreen extends StatelessWidget {
                       child: const Icon(LucideIcons.rocket, size: 48, color: AppTheme.primary),
                     ),
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       'No campaigns created yet',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Switch to the "Add" tab to launch your first Instagram campaign!',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
@@ -139,14 +139,14 @@ class CampaignsScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   goalTitle,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   link,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
                                 ),
                               ],
                             ),
@@ -173,13 +173,13 @@ class CampaignsScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Progress',
                             style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                           ),
                           Text(
                             '$current / $target $goal',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
                           ),
                         ],
                       ),

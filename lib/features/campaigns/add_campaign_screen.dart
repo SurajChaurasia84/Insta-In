@@ -63,7 +63,7 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
 
         final int currentCoins = userSnapshot.data()?['coins'] ?? 0;
         if (currentCoins < cost) {
-          throw Exception('Insufficient coins! You need $cost coins.');
+          throw Exception('Insufficient balance! You need ₹$cost.');
         }
 
         final int currentCampaigns = userSnapshot.data()?['campaignsCount'] ?? userSnapshot.data()?['campaigns'] ?? 0;
@@ -211,7 +211,7 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                       const Text('Total Cost', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       Row(
                         children: [
-                          const Icon(LucideIcons.coins, color: Colors.amber, size: 24),
+                          const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 24),
                           const SizedBox(width: 8),
                           Text('$_totalCost', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.amber)),
                         ],
