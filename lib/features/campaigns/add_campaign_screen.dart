@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:insta_in/core/theme.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:insta_in/features/earn/add_sponsor_ad_screen.dart';
 
 class AddCampaignScreen extends StatefulWidget {
   const AddCampaignScreen({super.key});
@@ -15,17 +16,10 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
   final _formKey = GlobalKey<FormState>();
   final _linkController = TextEditingController();
   
-  String _selectedGoal = 'views';
-  double _quantity = 100;
+  int _selectedPackage = 0; // 0 for Combo Pack (75 Rs), 1 for Growth Pack (100 Rs)
   bool _isCreating = false;
 
-  final Map<String, int> _costPerItem = {
-    'views': 1,
-    'likes': 5,
-    'followers': 10,
-  };
-
-  int get _totalCost => (_quantity * _costPerItem[_selectedGoal]!).toInt();
+  int get _totalCost => _selectedPackage == 0 ? 75 : 100;
 
   @override
   void dispose() {
@@ -67,35 +61,76 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
         }
 
         final int currentCampaigns = userSnapshot.data()?['campaignsCount'] ?? userSnapshot.data()?['campaigns'] ?? 0;
+        final int campaignIncrement = (_selectedPackage == 0) ? 2 : 1;
 
         // Deduct coins and update campaignsCount
         transaction.update(userRef, {
           'coins': currentCoins - cost,
-          'campaignsCount': currentCampaigns + 1,
+          'campaignsCount': currentCampaigns + campaignIncrement,
         });
 
-        // Save active campaign
-        transaction.set(campaignRef, {
-          'id': campaignRef.id,
-          'userId': user.uid,
-          'instagramLink': link,
-          'goal': _selectedGoal,
-          'quantity': _quantity.toInt(),
-          'completedCount': 0,
-          'totalCost': cost,
-          'createdAt': FieldValue.serverTimestamp(),
-          'status': 'active',
-        });
+        if (_selectedPackage == 0) {
+          // Combo Pack: 100 Likes + 30 Followers
+          // 1. Create Followers campaign (cost = 75)
+          transaction.set(campaignRef, {
+            'id': campaignRef.id,
+            'userId': user.uid,
+            'instagramLink': link,
+            'goal': 'followers',
+            'quantity': 30,
+            'completedCount': 0,
+            'totalCost': 75,
+            'createdAt': FieldValue.serverTimestamp(),
+            'status': 'active',
+          });
 
-        // Record activity log
-        transaction.set(activityRef, {
-          'id': activityRef.id,
-          'title': 'Campaign Created',
-          'description': 'Goal: ${_selectedGoal.toUpperCase()} | Qty: ${_quantity.toInt()}',
-          'coins': cost,
-          'type': 'spent',
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+          // 2. Create Likes campaign (cost = 0)
+          final likesCampaignRef = FirebaseFirestore.instance.collection('campaigns').doc();
+          transaction.set(likesCampaignRef, {
+            'id': likesCampaignRef.id,
+            'userId': user.uid,
+            'instagramLink': link,
+            'goal': 'likes',
+            'quantity': 100,
+            'completedCount': 0,
+            'totalCost': 0,
+            'createdAt': FieldValue.serverTimestamp(),
+            'status': 'active',
+          });
+
+          // Record activity log
+          transaction.set(activityRef, {
+            'id': activityRef.id,
+            'title': 'Campaign Created',
+            'description': 'Combo Pack (100 Likes & 30 Followers)',
+            'coins': 75,
+            'type': 'spent',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        } else {
+          // Growth Pack: 750 Followers (cost = 100)
+          transaction.set(campaignRef, {
+            'id': campaignRef.id,
+            'userId': user.uid,
+            'instagramLink': link,
+            'goal': 'followers',
+            'quantity': 750,
+            'completedCount': 0,
+            'totalCost': 100,
+            'createdAt': FieldValue.serverTimestamp(),
+            'status': 'active',
+          });
+
+          // Record activity log
+          transaction.set(activityRef, {
+            'id': activityRef.id,
+            'title': 'Campaign Created',
+            'description': 'Growth Pack (750 Followers)',
+            'coins': 100,
+            'type': 'spent',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       });
 
       if (mounted) {
@@ -106,9 +141,6 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
           ),
         );
         _linkController.clear();
-        setState(() {
-          _quantity = 100;
-        });
       }
     } catch (e) {
       if (mounted) {
@@ -130,6 +162,7 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Campaign', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -141,12 +174,72 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Premium Ad Promotion Banner
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEC4899).withOpacity(0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Promote Your Business! 📢',
+                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Sponsor your shop, brand, website, or channel and get real local visits.',
+                            style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AddSponsorAdScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF8B5CF6),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Create Sponsor Ad', style: TextStyle(fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Link Input
               const Text('Instagram Link', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _linkController,
-                style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   hintText: 'https://instagram.com/p/... or @username',
                   prefixIcon: Icon(LucideIcons.link),
@@ -160,39 +253,115 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Goal Selection
-              const Text('Campaign Goal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              // Choose Package
+              const Text('Choose Package', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildGoalOption('views', LucideIcons.playCircle, 'Views'),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedPackage = 0;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _selectedPackage == 0 ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedPackage == 0 ? AppTheme.primary : AppTheme.primary.withOpacity(0.1),
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Combo Pack',
+                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '100 Likes &\n30+ Followers',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 16),
+                                const Text(
+                                  '75',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.primary),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  _buildGoalOption('likes', LucideIcons.heart, 'Likes'),
-                  const SizedBox(width: 12),
-                  _buildGoalOption('followers', LucideIcons.userPlus, 'Followers'),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedPackage = 1;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _selectedPackage == 1 ? AppTheme.primary.withOpacity(0.15) : AppTheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedPackage == 1 ? AppTheme.primary : AppTheme.primary.withOpacity(0.1),
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Growth Pack',
+                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '750 Followers\n(Likes & Views Free)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 16),
+                                const Text(
+                                  '100',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.primary),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
-              const SizedBox(height: 32),
-
-              // Quantity Slider
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text('${_quantity.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppTheme.primary)),
-                ],
-              ),
-              Slider(
-                value: _quantity,
-                min: 50,
-                max: 5000,
-                divisions: 99,
-                activeColor: AppTheme.primary,
-                onChanged: (value) {
-                  setState(() {
-                    _quantity = value;
-                  });
-                },
               ),
               const SizedBox(height: 32),
 
@@ -211,9 +380,9 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                       const Text('Total Cost', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       Row(
                         children: [
-                          const Icon(LucideIcons.indianRupee, color: Colors.amber, size: 24),
+                          const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 24),
                           const SizedBox(width: 8),
-                          Text('$_totalCost', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.amber)),
+                          Text('$_totalCost', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.primary)),
                         ],
                       )
                     ],
@@ -235,43 +404,6 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                         ),
                       )
                     : const Text('Pay & Create Campaign'),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoalOption(String id, IconData icon, String label) {
-    final isSelected = _selectedGoal == id;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedGoal = id;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: isSelected ? AppTheme.primary : AppTheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? AppTheme.primary : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: isSelected ? Colors.white : AppTheme.textSecondary),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppTheme.textSecondary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
               ),
             ],
           ),
