@@ -80,14 +80,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       if (user != null) {
         // 5. Save user details to Cloud Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'name': user.displayName ?? 'Insta In User',
-          'email': user.email ?? '',
-          'photoUrl': user.photoURL ?? '',
-          'createdAt': FieldValue.serverTimestamp(),
-          'coins': 0, // No signup bonus, initial balance is 0
-        }, SetOptions(merge: true));
+        final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        final userDoc = await userDocRef.get();
+
+        if (!userDoc.exists) {
+          await userDocRef.set({
+            'uid': user.uid,
+            'name': user.displayName ?? 'Insta In User',
+            'email': user.email ?? '',
+            'photoUrl': user.photoURL ?? '',
+            'createdAt': FieldValue.serverTimestamp(),
+            'coins': 0, // No signup bonus, initial balance is 0
+          });
+        } else {
+          await userDocRef.update({
+            'name': user.displayName ?? 'Insta In User',
+            'photoUrl': user.photoURL ?? '',
+          });
+        }
 
         // 6. Save onboarding completed flag to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
