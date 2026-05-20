@@ -23,6 +23,7 @@ class AppInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     return Scaffold(
       appBar: AppBar(
         title: const Text('App Info', style: TextStyle(fontWeight: FontWeight.bold)),

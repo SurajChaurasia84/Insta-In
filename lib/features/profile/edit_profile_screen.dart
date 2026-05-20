@@ -127,6 +127,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),

@@ -29,6 +29,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     if (_uid == null) {
       return const Scaffold(
         body: Center(child: Text('User not logged in.')),
@@ -184,12 +185,6 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> with Sing
                         fontSize: 15,
                         color: isEarned ? Colors.greenAccent : AppTheme.primary,
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      LucideIcons.indianRupee,
-                      size: 16,
-                      color: Colors.amber,
                     ),
                   ],
                 ),

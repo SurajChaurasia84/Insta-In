@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final data = snapshot.data()!;
           final String name = data['name'] ?? user.displayName ?? 'Insta In User';
           final double coins = (data['coins'] ?? 0).toDouble();
-          final int completed = data['completedCount'] ?? data['completed'] ?? 0;
+          final int completed = ((data['completedCount'] ?? data['completed'] ?? 0) as num).toInt();
 
           if (mounted) {
             setState(() {
@@ -259,6 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
