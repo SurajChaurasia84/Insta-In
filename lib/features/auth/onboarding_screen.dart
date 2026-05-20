@@ -86,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'email': user.email ?? '',
           'photoUrl': user.photoURL ?? '',
           'createdAt': FieldValue.serverTimestamp(),
-          'coins': 0.0, 
+          'coins': 0, // No signup bonus, initial balance is 0
         }, SetOptions(merge: true));
 
         // 6. Save onboarding completed flag to SharedPreferences
