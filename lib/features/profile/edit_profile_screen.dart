@@ -244,24 +244,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     // UPI Details Section
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppTheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
                       ),
-                      child: const Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(LucideIcons.wallet, size: 20, color: AppTheme.primary),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Required for withdraw money',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primary,
+                          const Row(
+                            children: [
+                              Icon(LucideIcons.wallet, size: 20, color: AppTheme.primary),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Required for withdrawals',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Important Info: We collect your UPI ID and UPI Number solely for processing your wallet withdrawals. This data is transmitted securely (encrypted in transit) and is never shared with any third party.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                              height: 1.4,
                             ),
                           ),
                         ],

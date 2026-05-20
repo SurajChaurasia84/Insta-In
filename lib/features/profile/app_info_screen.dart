@@ -212,11 +212,11 @@ class AppInfoScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   '© 2026 Insta In. All rights reserved.',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white24,
+                    color: AppTheme.textSecondary.withOpacity(0.5),
                   ),
                 ),
               ],
