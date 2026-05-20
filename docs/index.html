@@ -1,615 +1,798 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Privacy Policy | Insta In</title>
-    <meta name="description" content="Detailed Privacy Policy for Insta In application. Learn how we collect, use, and protect your personal, social media, and payment information.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <meta
+      name="description"
+      content="Detailed Privacy Policy for Insta In application. Learn how we collect, use, and protect your personal, social media, and payment information."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary: #8B5CF6;
-            --primary-gradient: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-            --secondary: #EC4899;
-            --background: #0F172A;
-            --surface: #1E293B;
-            --surface-hover: #2E3B4E;
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --success: #10B981;
-            --border: rgba(255, 255, 255, 0.08);
-            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+      :root {
+        --primary: #8b5cf6;
+        --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        --secondary: #ec4899;
+        --background: #0f172a;
+        --surface: #1e293b;
+        --surface-hover: #2e3b4e;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --success: #10b981;
+        --border: rgba(255, 255, 255, 0.08);
+        --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
 
-        [data-theme="light"] {
-            --background: #F8FAFC;
-            --surface: #FFFFFF;
-            --surface-hover: #F1F5F9;
-            --text-primary: #0F172A;
-            --text-secondary: #64748B;
-            --border: rgba(15, 23, 42, 0.08);
-            --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
-        }
+      [data-theme="light"] {
+        --background: #f8fafc;
+        --surface: #ffffff;
+        --surface-hover: #f1f5f9;
+        --text-primary: #0f172a;
+        --text-secondary: #64748b;
+        --border: rgba(15, 23, 42, 0.08);
+        --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
+      }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            scroll-behavior: smooth;
-        }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        scroll-behavior: smooth;
+      }
 
-        body {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.7;
-            transition: var(--transition);
-        }
+      body {
+        font-family:
+          "Outfit",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        background-color: var(--background);
+        color: var(--text-primary);
+        line-height: 1.7;
+        transition: var(--transition);
+      }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--background);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--surface-hover);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--background);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--surface-hover);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+      }
 
-        /* Header / Navbar */
-        header {
-            position: sticky;
-            top: 0;
-            background-color: rgba(var(--background), 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
-            padding: 1rem 2rem;
-            transition: var(--transition);
-        }
+      /* Header / Navbar */
+      header {
+        position: sticky;
+        top: 0;
+        background-color: rgba(var(--background), 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        z-index: 100;
+        padding: 1rem 2rem;
+        transition: var(--transition);
+      }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+      .logo {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-        .logo-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--secondary);
-            border-radius: 50%;
-            display: inline-block;
-        }
+      .logo-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--secondary);
+        border-radius: 50%;
+        display: inline-block;
+      }
 
-        .theme-toggle-btn {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 0.6rem 1.2rem;
-            border-radius: 50px;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
+      .theme-toggle-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        font-family: "Outfit", sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+      }
 
-        .theme-toggle-btn:hover {
-            transform: translateY(-2px);
-            background: var(--surface-hover);
-            border-color: var(--primary);
-        }
+      .theme-toggle-btn:hover {
+        transform: translateY(-2px);
+        background: var(--surface-hover);
+        border-color: var(--primary);
+      }
 
-        /* Main Layout */
+      /* Main Layout */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 4rem;
+      }
+
+      @media (max-width: 968px) {
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 4rem;
+          grid-template-columns: 1fr;
+          gap: 2rem;
+          padding: 2rem 1.5rem;
         }
-
-        @media (max-width: 968px) {
-            .container {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-                padding: 2rem 1.5rem;
-            }
-            aside {
-                position: relative !important;
-                top: 0 !important;
-                height: auto !important;
-            }
-            .sidebar-nav {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-            .sidebar-nav a {
-                padding: 0.5rem 1rem !important;
-                font-size: 0.85rem !important;
-            }
-        }
-
-        /* Sidebar navigation */
         aside {
-            position: sticky;
-            top: 100px;
-            height: fit-content;
+          position: relative !important;
+          top: 0 !important;
+          height: auto !important;
         }
-
-        .sidebar-title {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
         .sidebar-nav {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
         }
-
         .sidebar-nav a {
-            display: block;
-            padding: 0.75rem 1.2rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            border-left: 3px solid transparent;
+          padding: 0.5rem 1rem !important;
+          font-size: 0.85rem !important;
         }
+      }
 
-        .sidebar-nav a:hover, .sidebar-nav a.active {
-            color: var(--primary);
-            background-color: var(--surface);
-            border-left-color: var(--primary);
-        }
+      /* Sidebar navigation */
+      aside {
+        position: sticky;
+        top: 100px;
+        height: fit-content;
+      }
 
-        /* Content Styles */
-        .content {
-            max-width: 800px;
-        }
+      .sidebar-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+      }
 
-        .policy-header {
-            margin-bottom: 3.5rem;
-        }
+      .sidebar-nav {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
 
-        .badge {
-            background: rgba(139, 92, 246, 0.1);
-            color: var(--primary);
-            padding: 0.4rem 1rem;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+      .sidebar-nav a {
+        display: block;
+        padding: 0.75rem 1.2rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        border-left: 3px solid transparent;
+      }
 
-        h1 {
-            font-size: 3rem;
-            font-weight: 900;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      .sidebar-nav a:hover,
+      .sidebar-nav a.active {
+        color: var(--primary);
+        background-color: var(--surface);
+        border-left-color: var(--primary);
+      }
 
-        .last-updated {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
+      /* Content Styles */
+      .content {
+        max-width: 800px;
+      }
 
-        /* Policy Sections */
-        section {
-            padding: 2.5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
+      .policy-header {
+        margin-bottom: 3.5rem;
+      }
 
-        section:last-child {
-            border-bottom: none;
-        }
+      .badge {
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--primary);
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: inline-block;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
 
-        h2 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+      h1 {
+        font-size: 3rem;
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
 
-        h2 span.num {
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900;
-            font-size: 2rem;
-        }
+      .last-updated {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        font-weight: 500;
+      }
 
-        p {
-            margin-bottom: 1.25rem;
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-            font-weight: 400;
-        }
+      /* Policy Sections */
+      section {
+        padding: 2.5rem 0;
+        border-bottom: 1px solid var(--border);
+      }
 
-        .highlight-box {
-            background-color: var(--surface);
-            border-left: 4px solid var(--primary);
-            padding: 1.5rem;
-            border-radius: 0 16px 16px 0;
-            margin: 1.5rem 0;
-            box-shadow: var(--shadow);
-        }
+      section:last-child {
+        border-bottom: none;
+      }
 
-        .highlight-box p {
-            margin-bottom: 0;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
+      h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
 
-        ul {
-            list-style: none;
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
+      h2 span.num {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+        font-size: 2rem;
+      }
 
-        li {
-            position: relative;
-            padding-left: 1.75rem;
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-        }
+      p {
+        margin-bottom: 1.25rem;
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        font-weight: 400;
+      }
 
-        li::before {
-            content: "✦";
-            position: absolute;
-            left: 0;
-            color: var(--secondary);
-            font-weight: bold;
-        }
+      .highlight-box {
+        background-color: var(--surface);
+        border-left: 4px solid var(--primary);
+        padding: 1.5rem;
+        border-radius: 0 16px 16px 0;
+        margin: 1.5rem 0;
+        box-shadow: var(--shadow);
+      }
 
-        .sub-section {
-            margin-top: 1.5rem;
-            padding: 1.2rem;
-            background-color: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
+      .highlight-box p {
+        margin-bottom: 0;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
 
-        h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.75rem;
-        }
+      ul {
+        list-style: none;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
 
-        /* Footer */
-        footer {
-            background-color: var(--surface);
-            padding: 3rem 2rem;
-            text-align: center;
-            border-top: 1px solid var(--border);
-            margin-top: 4rem;
-            transition: var(--transition);
-        }
+      li {
+        position: relative;
+        padding-left: 1.75rem;
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+      }
 
-        .footer-text {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
+      li::before {
+        content: "✦";
+        position: absolute;
+        left: 0;
+        color: var(--secondary);
+        font-weight: bold;
+      }
 
-        .footer-links {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-        }
+      .sub-section {
+        margin-top: 1.5rem;
+        padding: 1.2rem;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
 
-        .footer-links a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+      }
 
-        .footer-links a:hover {
-            color: var(--secondary);
-            text-decoration: underline;
-        }
+      /* Footer */
+      footer {
+        background-color: var(--surface);
+        padding: 3rem 2rem;
+        text-align: center;
+        border-top: 1px solid var(--border);
+        margin-top: 4rem;
+        transition: var(--transition);
+      }
+
+      .footer-text {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+
+      .footer-links {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+
+      .footer-links a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: var(--transition);
+      }
+
+      .footer-links a:hover {
+        color: var(--secondary);
+        text-decoration: underline;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <!-- Header / Navbar -->
     <header>
-        <div class="nav-container">
-            <a href="#" class="logo" id="nav-logo">
-                Insta In<span class="logo-dot"></span>
-            </a>
-            <button class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle light and dark mode">
-                <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
-            </button>
-        </div>
+      <div class="nav-container">
+        <a href="#" class="logo" id="nav-logo">
+          Insta In<span class="logo-dot"></span>
+        </a>
+        <button
+          class="theme-toggle-btn"
+          id="theme-toggle"
+          aria-label="Toggle light and dark mode"
+        >
+          <span id="theme-icon">☀️</span>
+          <span id="theme-text">Light Mode</span>
+        </button>
+      </div>
     </header>
 
     <!-- Main Content Area -->
     <div class="container">
-        <!-- Sidebar Navigation -->
-        <aside>
-            <div class="sidebar-title">Table of Contents</div>
-            <ul class="sidebar-nav" id="sidebar-menu">
-                <li><a href="#intro" class="active">1. Introduction</a></li>
-                <li><a href="#info-collect">2. Information We Collect</a></li>
-                <li><a href="#how-use">3. How We Use Data</a></li>
-                <li><a href="#data-share">4. Third-Party Sharing</a></li>
-                <li><a href="#anti-fraud">5. Anti-Fraud & Bans</a></li>
-                <li><a href="#security">6. Security & Retention</a></li>
-                <li><a href="#user-rights">7. Your Legal Rights</a></li>
-                <li><a href="#children">8. Children's Privacy</a></li>
-                <li><a href="#contact">9. Support & Contact</a></li>
+      <!-- Sidebar Navigation -->
+      <aside>
+        <div class="sidebar-title">Table of Contents</div>
+        <ul class="sidebar-nav" id="sidebar-menu">
+          <li><a href="#intro" class="active">1. Introduction</a></li>
+          <li><a href="#info-collect">2. Information We Collect</a></li>
+          <li><a href="#how-use">3. How We Use Data</a></li>
+          <li><a href="#data-share">4. Third-Party Sharing</a></li>
+          <li><a href="#anti-fraud">5. Anti-Fraud & Bans</a></li>
+          <li><a href="#security">6. Security & Retention</a></li>
+          <li><a href="#user-rights">7. Your Legal Rights</a></li>
+          <li><a href="#children">8. Children's Privacy</a></li>
+          <li><a href="#contact">9. Support & Contact</a></li>
+        </ul>
+      </aside>
+
+      <!-- Privacy Content -->
+      <main class="content">
+        <div class="policy-header">
+          <span class="badge">Legal Agreement</span>
+          <h1 id="main-heading">Privacy Policy</h1>
+          <p class="last-updated">Last Updated: May 20, 2026</p>
+        </div>
+
+        <!-- Introduction -->
+        <section id="intro">
+          <h2><span class="num">01.</span> Introduction</h2>
+          <p>
+            Welcome to <strong>Insta In</strong> ("we," "our," "us," or the
+            "App"). We respect your privacy and are committed to protecting the
+            personal data you share with us. This Privacy Policy is designed to
+            explain in deep detail how we collect, process, utilize, share, and
+            protect your information when you use our mobile application and
+            related web properties.
+          </p>
+          <p>
+            By registering an account, logging in via Google Sign-in, or
+            performing tasks within the Insta In platform, you explicitly
+            consent to the data collection and usage practices described in this
+            document. If you do not agree with any terms of this policy, please
+            do not access or use the App.
+          </p>
+          <div class="highlight-box">
+            <p>
+              Insta In is a community-driven promotion platform. Users can spend
+              coins to launch Instagram Follower Campaigns or Sponsor Ad Visits,
+              or earn coins by supporting other creators' profiles and visiting
+              their business links.
+            </p>
+          </div>
+        </section>
+
+        <!-- Information We Collect -->
+        <section id="info-collect">
+          <h2><span class="num">02.</span> Information We Collect</h2>
+          <p>
+            We collect information about you directly from your interactions,
+            automatically through the application, and from third-party services
+            like Google Authentication. The data collected is grouped as
+            follows:
+          </p>
+
+          <div class="sub-section">
+            <h3>A. Registration & Profile Data</h3>
+            <p>
+              When you log in for the first time via Google Authentication, we
+              retrieve your Google account profile information, which includes:
+            </p>
+            <ul>
+              <li>Your full name (Google Display Name)</li>
+              <li>Your primary registered Gmail address</li>
+              <li>Your Google account profile photo URL</li>
+              <li>A unique identifier token (Google UID)</li>
             </ul>
-        </aside>
+          </div>
 
-        <!-- Privacy Content -->
-        <main class="content">
-            <div class="policy-header">
-                <span class="badge">Legal Agreement</span>
-                <h1 id="main-heading">Privacy Policy</h1>
-                <p class="last-updated">Last Updated: May 20, 2026</p>
-            </div>
+          <div class="sub-section">
+            <h3>B. Social Media Data</h3>
+            <p>
+              To enable Instagram follow tasks and verify task completions, we
+              require and collect your Instagram credentials and link profiles:
+            </p>
+            <ul>
+              <li>Your Instagram username (e.g., @username)</li>
+              <li>Your public Instagram Profile URL</li>
+              <li>
+                Interaction logs (profiles you have followed through our
+                platform)
+              </li>
+            </ul>
+          </div>
 
-            <!-- Introduction -->
-            <section id="intro">
-                <h2><span class="num">01.</span> Introduction</h2>
-                <p>Welcome to <strong>Insta In</strong> ("we," "our," "us," or the "App"). We respect your privacy and are committed to protecting the personal data you share with us. This Privacy Policy is designed to explain in deep detail how we collect, process, utilize, share, and protect your information when you use our mobile application and related web properties.</p>
-                <p>By registering an account, logging in via Google Sign-in, or performing tasks within the Insta In platform, you explicitly consent to the data collection and usage practices described in this document. If you do not agree with any terms of this policy, please do not access or use the App.</p>
-                <div class="highlight-box">
-                    <p>Insta In is a community-driven promotion platform. Users can spend coins to launch Instagram Follower Campaigns or Sponsor Ad Visits, or earn coins by supporting other creators' profiles and visiting their business links.</p>
-                </div>
-            </section>
+          <div class="sub-section">
+            <h3>C. Payment & Settlement Data</h3>
+            <p>
+              For settlements, deposits, and withdrawal processing, we collect
+              financial transaction credentials:
+            </p>
+            <ul>
+              <li>
+                <strong>UPI ID</strong> (e.g., yourname@upi) for processing
+                payout requests
+              </li>
+              <li>
+                <strong>UPI Phone Number</strong> linked to your UPI account for
+                verification
+              </li>
+              <li>
+                Transaction receipts, amounts, deposit history, and Unique
+                Transaction Reference (UTR) numbers submitted by you to verify
+                manual bank/UPI deposits
+              </li>
+            </ul>
+          </div>
 
-            <!-- Information We Collect -->
-            <section id="info-collect">
-                <h2><span class="num">02.</span> Information We Collect</h2>
-                <p>We collect information about you directly from your interactions, automatically through the application, and from third-party services like Google Authentication. The data collected is grouped as follows:</p>
-                
-                <div class="sub-section">
-                    <h3>A. Registration & Profile Data</h3>
-                    <p>When you log in for the first time via Google Authentication, we retrieve your Google account profile information, which includes:</p>
-                    <ul>
-                        <li>Your full name (Google Display Name)</li>
-                        <li>Your primary registered Gmail address</li>
-                        <li>Your Google account profile photo URL</li>
-                        <li>A unique identifier token (Google UID)</li>
-                    </ul>
-                </div>
+          <div class="sub-section">
+            <h3>D. System & Device Logs</h3>
+            <p>
+              We automatically log metadata from your mobile device to prevent
+              multi-accounting and verify security:
+            </p>
+            <ul>
+              <li>Operating System version (Android/iOS) and device model</li>
+              <li>IP Address and network connection details</li>
+              <li>
+                Active app sessions, clicks, timestamps, and navigation history
+              </li>
+            </ul>
+          </div>
+        </section>
 
-                <div class="sub-section">
-                    <h3>B. Social Media Data</h3>
-                    <p>To enable Instagram follow tasks and verify task completions, we require and collect your Instagram credentials and link profiles:</p>
-                    <ul>
-                        <li>Your Instagram username (e.g., @username)</li>
-                        <li>Your public Instagram Profile URL</li>
-                        <li>Interaction logs (profiles you have followed through our platform)</li>
-                    </ul>
-                </div>
+        <!-- How We Use Data -->
+        <section id="how-use">
+          <h2><span class="num">03.</span> How We Use Your Data</h2>
+          <p>
+            We process your data strictly under the rules of necessity and
+            consent. Here is how your information is used:
+          </p>
+          <ul>
+            <li>
+              <strong>Service Provision:</strong> To create, manage, and display
+              campaign tasks. This includes showing your Google name and profile
+              photo to other users so they can confirm who they are following on
+              Instagram.
+            </li>
+            <li>
+              <strong>Earning & Rewards Verification:</strong> To track coin
+              balances, verify if an Instagram follow task or sponsored link
+              visit was genuinely completed, and reward coins correctly.
+            </li>
+            <li>
+              <strong>Withdrawals Processing:</strong> To check withdrawal
+              requests and route the corresponding monetary balance to your
+              verified UPI ID or UPI phone number.
+            </li>
+            <li>
+              <strong>Anti-Abuse Operations:</strong> To prevent bots, fake
+              clicks, immediate unfollowing, and coordinate security measures.
+            </li>
+          </ul>
+        </section>
 
-                <div class="sub-section">
-                    <h3>C. Payment & Settlement Data</h3>
-                    <p>For settlements, deposits, and withdrawal processing, we collect financial transaction credentials:</p>
-                    <ul>
-                        <li><strong>UPI ID</strong> (e.g., yourname@upi) for processing payout requests</li>
-                        <li><strong>UPI Phone Number</strong> linked to your UPI account for verification</li>
-                        <li>Transaction receipts, amounts, deposit history, and Unique Transaction Reference (UTR) numbers submitted by you to verify manual bank/UPI deposits</li>
-                    </ul>
-                </div>
+        <!-- Third-Party Sharing -->
+        <section id="data-share">
+          <h2><span class="num">04.</span> Third-Party Data Sharing</h2>
+          <p>
+            We do not sell, rent, or trade your personal information to third
+            parties. We share data only with trusted service providers to ensure
+            the core functions of our application work properly:
+          </p>
 
-                <div class="sub-section">
-                    <h3>D. System & Device Logs</h3>
-                    <p>We automatically log metadata from your mobile device to prevent multi-accounting and verify security:</p>
-                    <ul>
-                        <li>Operating System version (Android/iOS) and device model</li>
-                        <li>IP Address and network connection details</li>
-                        <li>Active app sessions, clicks, timestamps, and navigation history</li>
-                    </ul>
-                </div>
-            </section>
+          <div class="sub-section">
+            <h3>Firebase Services (Google LLC)</h3>
+            <p>
+              We host our database, user authentication services, and
+              application logs on Google Firebase. Firebase complies with
+              rigorous security standards. The specific Firebase sub-services
+              used are:
+            </p>
+            <ul>
+              <li>
+                <strong>Firebase Authentication:</strong> Manages secure user
+                login tokens safely without exposing your passwords to our
+                servers.
+              </li>
+              <li>
+                <strong>Cloud Firestore:</strong> Stores profile details, task
+                campaign history, deposit receipts, activity logs, and coin
+                balances.
+              </li>
+              <li>
+                <strong>Firebase Storage:</strong> Stores submitted verification
+                receipts or payment screenshots.
+              </li>
+            </ul>
+          </div>
 
-            <!-- How We Use Data -->
-            <section id="how-use">
-                <h2><span class="num">03.</span> How We Use Your Data</h2>
-                <p>We process your data strictly under the rules of necessity and consent. Here is how your information is used:</p>
-                <ul>
-                    <li><strong>Service Provision:</strong> To create, manage, and display campaign tasks. This includes showing your Google name and profile photo to other users so they can confirm who they are following on Instagram.</li>
-                    <li><strong>Earning & Rewards Verification:</strong> To track coin balances, verify if an Instagram follow task or sponsored link visit was genuinely completed, and reward coins correctly.</li>
-                    <li><strong>Withdrawals Processing:</strong> To check withdrawal requests and route the corresponding monetary balance to your verified UPI ID or UPI phone number.</li>
-                    <li><strong>Anti-Abuse Operations:</strong> To prevent bots, fake clicks, immediate unfollowing, and coordinate security measures.</li>
-                </ul>
-            </section>
+          <div class="sub-section">
+            <h3>Instagram/Meta Platforms</h3>
+            <p>
+              When you click "Follow," we launch the Instagram application on
+              your device to open the target profile. While we do not share your
+              private Google credentials with Instagram, the meta-app links your
+              follow actions publicly based on your public Instagram settings.
+            </p>
+          </div>
+        </section>
 
-            <!-- Third-Party Sharing -->
-            <section id="data-share">
-                <h2><span class="num">04.</span> Third-Party Data Sharing</h2>
-                <p>We do not sell, rent, or trade your personal information to third parties. We share data only with trusted service providers to ensure the core functions of our application work properly:</p>
-                
-                <div class="sub-section">
-                    <h3>Firebase Services (Google LLC)</h3>
-                    <p>We host our database, user authentication services, and application logs on Google Firebase. Firebase complies with rigorous security standards. The specific Firebase sub-services used are:</p>
-                    <ul>
-                        <li><strong>Firebase Authentication:</strong> Manages secure user login tokens safely without exposing your passwords to our servers.</li>
-                        <li><strong>Cloud Firestore:</strong> Stores profile details, task campaign history, deposit receipts, activity logs, and coin balances.</li>
-                        <li><strong>Firebase Storage:</strong> Stores submitted verification receipts or payment screenshots.</li>
-                    </ul>
-                </div>
+        <!-- Anti-Fraud & Ban System -->
+        <section id="anti-fraud">
+          <h2>
+            <span class="num">05.</span> Anti-Fraud, Immediate Unfollows & Bans
+          </h2>
+          <p>
+            To ensure fairness and authenticity for sponsors and creators who
+            spend real money or effort on our app, we enforce strict anti-fraud
+            tracking algorithms:
+          </p>
+          <div
+            class="highlight-box"
+            style="border-left-color: var(--secondary)"
+          >
+            <p>
+              ⚠️ CRITICAL RULE: Unfollowing profiles after claiming coin rewards
+              is strictly prohibited. Our system performs cross-checks on
+              withdrawal requests. Fake claims, immediate unfollows, or using
+              dummy/bot accounts will result in immediate bans and permanent
+              loss of all earnings.
+            </p>
+          </div>
+          <p>To implement this, our app tracks:</p>
+          <ul>
+            <li>
+              Your account task history (profiles you followed through the App).
+            </li>
+            <li>
+              Verification timestamps when your account returns to the App via
+              our background resume observer.
+            </li>
+            <li>
+              Random automatic audits matching the list of tasks completed by
+              your account against the live following list on your linked
+              Instagram profile.
+            </li>
+          </ul>
+        </section>
 
-                <div class="sub-section">
-                    <h3>Instagram/Meta Platforms</h3>
-                    <p>When you click "Follow," we launch the Instagram application on your device to open the target profile. While we do not share your private Google credentials with Instagram, the meta-app links your follow actions publicly based on your public Instagram settings.</p>
-                </div>
-            </section>
+        <!-- Security & Retention -->
+        <section id="security">
+          <h2><span class="num">06.</span> Data Security & Retention</h2>
+          <p>
+            We employ administrative, physical, and electronic security measures
+            to safeguard your information from unauthorized access, loss, or
+            alteration. All database communication is encrypted using Secure
+            Sockets Layer (SSL) transmission technology.
+          </p>
 
-            <!-- Anti-Fraud & Ban System -->
-            <section id="anti-fraud">
-                <h2><span class="num">05.</span> Anti-Fraud, Immediate Unfollows & Bans</h2>
-                <p>To ensure fairness and authenticity for sponsors and creators who spend real money or effort on our app, we enforce strict anti-fraud tracking algorithms:</p>
-                <div class="highlight-box" style="border-left-color: var(--secondary);">
-                    <p>⚠️ CRITICAL RULE: Unfollowing profiles after claiming coin rewards is strictly prohibited. Our system performs cross-checks on withdrawal requests. Fake claims, immediate unfollows, or using dummy/bot accounts will result in immediate bans and permanent loss of all earnings.</p>
-                </div>
-                <p>To implement this, our app tracks:</p>
-                <ul>
-                    <li>Your account task history (profiles you followed through the App).</li>
-                    <li>Verification timestamps when your account returns to the App via our background resume observer.</li>
-                    <li>Random automatic audits matching the list of tasks completed by your account against the live following list on your linked Instagram profile.</li>
-                </ul>
-            </section>
+          <h3>Data Retention Policy</h3>
+          <p>
+            We store your data as long as your account remains active in our
+            system. If your account is banned for fraud or unfollowing, we
+            retain your unique identifiers, UPI information, and transaction
+            history indefinitely to prevent future registration and protect our
+            system integrity.
+          </p>
+          <p>
+            For clean/active accounts, data is deleted or fully anonymized upon
+            a valid account deletion request.
+          </p>
+        </section>
 
-            <!-- Security & Retention -->
-            <section id="security">
-                <h2><span class="num">06.</span> Data Security & Retention</h2>
-                <p>We employ administrative, physical, and electronic security measures to safeguard your information from unauthorized access, loss, or alteration. All database communication is encrypted using Secure Sockets Layer (SSL) transmission technology.</p>
-                
-                <h3>Data Retention Policy</h3>
-                <p>We store your data as long as your account remains active in our system. If your account is banned for fraud or unfollowing, we retain your unique identifiers, UPI information, and transaction history indefinitely to prevent future registration and protect our system integrity.</p>
-                <p>For clean/active accounts, data is deleted or fully anonymized upon a valid account deletion request.</p>
-            </section>
+        <!-- User Rights -->
+        <section id="user-rights">
+          <h2><span class="num">07.</span> Your Legal Rights & Controls</h2>
+          <p>
+            You have control over how your data is accessed, modified, and
+            deleted within Insta In:
+          </p>
+          <ul>
+            <li>
+              <strong>Edit Profile Information:</strong> You can edit your
+              display name, Instagram username, UPI ID, and UPI Phone Number at
+              any time by navigating to the <em>Edit Profile</em> screen in the
+              app.
+            </li>
+            <li>
+              <strong>Withdrawal Audits:</strong> You can request a complete
+              history of your coin activity, deposits, and withdrawal
+              transactions.
+            </li>
+            <li>
+              <strong>Account Deletion:</strong> You can request the deletion of
+              your account and related records. To request deletion, please
+              contact support at the email below. We will delete your
+              information within 15 business days, except where we are legally
+              required to retain transaction details for financial audits.
+            </li>
+          </ul>
+        </section>
 
-            <!-- User Rights -->
-            <section id="user-rights">
-                <h2><span class="num">07.</span> Your Legal Rights & Controls</h2>
-                <p>You have control over how your data is accessed, modified, and deleted within Insta In:</p>
-                <ul>
-                    <li><strong>Edit Profile Information:</strong> You can edit your display name, Instagram username, UPI ID, and UPI Phone Number at any time by navigating to the <em>Edit Profile</em> screen in the app.</li>
-                    <li><strong>Withdrawal Audits:</strong> You can request a complete history of your coin activity, deposits, and withdrawal transactions.</li>
-                    <li><strong>Account Deletion:</strong> You can request the deletion of your account and related records. To request deletion, please contact support at the email below. We will delete your information within 15 business days, except where we are legally required to retain transaction details for financial audits.</li>
-                </ul>
-            </section>
+        <!-- Children's Privacy -->
+        <section id="children">
+          <h2><span class="num">08.</span> Children's Privacy</h2>
+          <p>
+            Insta In is not intended for use by individuals under the age of 13.
+            We do not knowingly collect or request personal information from
+            children under 13. In the event that we learn that we have collected
+            personal data from a child under age 13 without verified parental
+            consent, we will delete that database entry immediately.
+          </p>
+        </section>
 
-            <!-- Children's Privacy -->
-            <section id="children">
-                <h2><span class="num">08.</span> Children's Privacy</h2>
-                <p>Insta In is not intended for use by individuals under the age of 13. We do not knowingly collect or request personal information from children under 13. In the event that we learn that we have collected personal data from a child under age 13 without verified parental consent, we will delete that database entry immediately.</p>
-            </section>
-
-            <!-- Support & Contact -->
-            <section id="contact">
-                <h2><span class="num">09.</span> Support & Contact Details</h2>
-                <p>For questions, privacy inquiries, data deletion requests, or general support, you can contact the developer directly at:</p>
-                <div class="sub-section" style="background-color: var(--surface);">
-                    <!-- <p style="margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">Developer & Privacy Officer:</p>
-                    <p style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 700; font-size: 1.1rem;">Jaswant Singh</p> -->
-                    <p style="margin-bottom: 0; color: var(--text-secondary);">
-                        📧 Email Support: <a href="mailto:jaswantsingh777705@gmail.com" style="color: var(--secondary); text-decoration: none; font-weight: 600;">jaswantsingh777705@gmail.com</a>
-                    </p>
-                </div>
-            </section>
-        </main>
+        <!-- Support & Contact -->
+        <section id="contact">
+          <h2><span class="num">09.</span> Support & Contact Details</h2>
+          <p>
+            For questions, privacy inquiries, data deletion requests, or general
+            support, you can contact the developer directly at:
+          </p>
+          <div class="sub-section" style="background-color: var(--surface)">
+            <p style="margin-bottom: 0; color: var(--text-secondary)">
+              📧 Email Support:
+              <a
+                href="mailto:jaswantsingh777705@gmail.com"
+                style="
+                  color: var(--secondary);
+                  text-decoration: none;
+                  font-weight: 600;
+                "
+                >jaswantsingh777705@gmail.com</a
+              >
+            </p>
+          </div>
+        </section>
+      </main>
     </div>
 
     <!-- Footer -->
     <footer>
-        <div class="footer-text">
-            &copy; 2026 Insta In. All rights reserved.
-        </div>
-        <div class="footer-links">
-            <a href="#">Back to Top</a>
-            <a href="mailto:jaswantsingh777705@gmail.com">Help & Support</a>
-        </div>
+      <div class="footer-text">&copy; 2026 Insta In. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="#">Back to Top</a>
+        <a href="mailto:jaswantsingh777705@gmail.com">Help & Support</a>
+      </div>
     </footer>
 
     <!-- Theme Toggle Logic & Navigation Highlighting -->
     <script>
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const themeText = document.getElementById('theme-text');
-        const htmlElement = document.documentElement;
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      const themeIcon = document.getElementById("theme-icon");
+      const themeText = document.getElementById("theme-text");
+      const htmlElement = document.documentElement;
 
-        // Load saved theme or default to dark mode
-        const savedTheme = localStorage.getItem('privacy_theme') || 'dark';
-        setTheme(savedTheme);
+      // Load saved theme or default to dark mode
+      const savedTheme = localStorage.getItem("privacy_theme") || "dark";
+      setTheme(savedTheme);
 
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            setTheme(newTheme);
-        });
+      themeToggleBtn.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        setTheme(newTheme);
+      });
 
-        function setTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            localStorage.setItem('privacy_theme', theme);
-            if (theme === 'light') {
-                themeIcon.textContent = '🌙';
-                themeText.textContent = 'Dark Mode';
-            } else {
-                themeIcon.textContent = '☀️';
-                themeText.textContent = 'Light Mode';
-            }
+      function setTheme(theme) {
+        htmlElement.setAttribute("data-theme", theme);
+        localStorage.setItem("privacy_theme", theme);
+        if (theme === "light") {
+          themeIcon.textContent = "🌙";
+          themeText.textContent = "Dark Mode";
+        } else {
+          themeIcon.textContent = "☀️";
+          themeText.textContent = "Light Mode";
         }
+      }
 
-        // Active Link Highlighting on Scroll
-        const sections = document.querySelectorAll('section');
-        const navLinks = document.querySelectorAll('#sidebar-menu a');
+      // Active Link Highlighting on Scroll
+      const sections = document.querySelectorAll("section");
+      const navLinks = document.querySelectorAll("#sidebar-menu a");
 
-        window.addEventListener('scroll', () => {
-            let currentActiveId = 'intro';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (window.scrollY >= sectionTop - 120) {
-                    currentActiveId = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${currentActiveId}`) {
-                    link.classList.add('active');
-                }
-            });
+      window.addEventListener("scroll", () => {
+        let currentActiveId = "intro";
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          if (window.scrollY >= sectionTop - 120) {
+            currentActiveId = section.getAttribute("id");
+          }
         });
+
+        navLinks.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${currentActiveId}`) {
+            link.classList.add("active");
+          }
+        });
+      });
     </script>
-</body>
+  </body>
 </html>

@@ -251,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _launchPrivacyPolicy() async {
-    final Uri url = Uri.parse('https://instain-app.web.app/privacy');
+    final Uri url = Uri.parse('https://surajchaurasia84.github.io/Insta-In/');
     try {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (_) {}

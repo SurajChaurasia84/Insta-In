@@ -265,7 +265,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     decoration: TextDecoration.underline,
                                   ),
                                   recognizer: TapGestureRecognizer()
-                                    ..onTap = () => _launchURL('https://instain-app.web.app/privacy'),
+                                    ..onTap = () => _launchURL('https://surajchaurasia84.github.io/Insta-In/'),
                                 ),
                               ],
                             ),
