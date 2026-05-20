@@ -95,6 +95,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Scaffold(

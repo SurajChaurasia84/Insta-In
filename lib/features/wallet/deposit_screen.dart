@@ -101,6 +101,7 @@ class _DepositScreenState extends State<DepositScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
