@@ -586,7 +586,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text('Insta.In ', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Instagram.In ', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -733,7 +733,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       const Text(
-                                        'Join WhatsApp Channel! 💬',
+                                        'Join Telegram Channel! 💬',
                                         style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 6),
@@ -743,7 +743,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                                       ),
                                       const SizedBox(height: 12),
                                       ElevatedButton(
-                                        onPressed: () => _launchURL('https://whatsapp.com/channel/0029Va90d6jD38PaeU1vM90U'),
+                                        onPressed: () => _launchURL('https://t.me/instagramin01'),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.white,
                                           foregroundColor: const Color(0xFF10B981),
