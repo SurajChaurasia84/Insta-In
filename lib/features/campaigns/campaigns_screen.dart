@@ -94,6 +94,7 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Scaffold(
@@ -152,8 +153,8 @@ class _CampaignsScreenState extends State<CampaignsScreen> {
                     final String subtitle = isSponsor
                         ? (data['websiteLink'] ?? '')
                         : (data['instagramLink'] ?? '');
-                    final int current = data['completedCount'] ?? 0;
-                    final int target = data['quantity'] ?? 100;
+                    final int current = (data['completedCount'] is num) ? (data['completedCount'] as num).toInt() : 0;
+                    final int target = (data['quantity'] is num) ? (data['quantity'] as num).toInt() : 100;
                     final String status = data['status'] ?? 'active';
 
                     final double progress = (target > 0) ? (current / target).clamp(0.0, 1.0) : 0.0;

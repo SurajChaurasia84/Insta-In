@@ -69,12 +69,12 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
           throw Exception('User profile not found in database.');
         }
 
-        final int currentCoins = userSnapshot.data()?['coins'] ?? 0;
+        final double currentCoins = (userSnapshot.data()?['coins'] ?? 0).toDouble();
         if (currentCoins < cost) {
           throw Exception('Insufficient balance! You need ₹$cost.');
         }
 
-        final int currentCampaigns = userSnapshot.data()?['campaignsCount'] ?? userSnapshot.data()?['campaigns'] ?? 0;
+        final int currentCampaigns = ((userSnapshot.data()?['campaignsCount'] ?? userSnapshot.data()?['campaigns'] ?? 0) as num).toInt();
         const int campaignIncrement = 1;
 
         // Deduct coins and update campaignsCount
