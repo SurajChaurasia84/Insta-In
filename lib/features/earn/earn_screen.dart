@@ -16,7 +16,7 @@ class EarnScreen extends StatefulWidget {
   State<EarnScreen> createState() => _EarnScreenState();
 }
 
-class _EarnScreenState extends State<EarnScreen> {
+class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
   bool _isClaiming = false;
   double _coins = 0.0;
   bool _hasSeenFollowWarning = false;
@@ -24,18 +24,46 @@ class _EarnScreenState extends State<EarnScreen> {
   final PageController _bannerController = PageController(viewportFraction: 0.9);
   int _currentBannerPage = 0;
 
+  Map<String, dynamic>? _pendingFollowTask;
+  Map<String, dynamic>? _pendingSponsorTask;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadCachedCoins();
     _subscribeToUserCoins();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _bannerController.dispose();
     _userSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_pendingFollowTask != null) {
+        final task = _pendingFollowTask!;
+        _pendingFollowTask = null;
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            _showVerificationDialog(task);
+          }
+        });
+      } else if (_pendingSponsorTask != null) {
+        final task = _pendingSponsorTask!;
+        _pendingSponsorTask = null;
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            _showSponsorDetailsDialog(task);
+          }
+        });
+      }
+    }
   }
 
   Future<void> _loadCachedCoins() async {
@@ -125,15 +153,15 @@ class _EarnScreenState extends State<EarnScreen> {
         }
 
         final campaignData = campaignSnapshot.data()!;
-        final int currentCompleted = campaignData['completedCount'] ?? 0;
-        final int targetQuantity = campaignData['quantity'] ?? 100;
+        final int currentCompleted = (campaignData['completedCount'] is num) ? (campaignData['completedCount'] as num).toInt() : 0;
+        final int targetQuantity = (campaignData['quantity'] is num) ? (campaignData['quantity'] as num).toInt() : 100;
 
         if (currentCompleted >= targetQuantity) {
           throw Exception('This campaign is already completed!');
         }
 
         final double currentCoins = (userSnapshot.data()?['coins'] ?? 0).toDouble();
-        final int totalCompleted = userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0;
+        final int totalCompleted = ((userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0) as num).toInt();
 
         // 1. Reward the viewer
         transaction.update(userRef, {
@@ -223,15 +251,15 @@ class _EarnScreenState extends State<EarnScreen> {
           throw Exception('You have already claimed reward for this ad today.');
         }
 
-        final int currentCompleted = adDataMap['completedCount'] ?? 0;
-        final int targetQuantity = adDataMap['quantity'] ?? 100;
+        final int currentCompleted = (adDataMap['completedCount'] is num) ? (adDataMap['completedCount'] as num).toInt() : 0;
+        final int targetQuantity = (adDataMap['quantity'] is num) ? (adDataMap['quantity'] as num).toInt() : 100;
 
         if (currentCompleted >= targetQuantity) {
           throw Exception('This campaign has completed its budget!');
         }
 
-        final int currentCoins = userSnapshot.data()?['coins'] ?? 0;
-        final int totalCompleted = userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0;
+        final double currentCoins = (userSnapshot.data()?['coins'] ?? 0).toDouble();
+        final int totalCompleted = ((userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0) as num).toInt();
 
         // 1. Reward the user
         transaction.update(userRef, {
@@ -291,6 +319,7 @@ class _EarnScreenState extends State<EarnScreen> {
       context: context,
       barrierDismissible: !_isClaiming,
       builder: (context) {
+        Theme.of(context); // Register dependency to rebuild instantly when theme toggles
         final String goal = task['goal'] ?? 'views';
         double reward = 1.0;
         if (goal == 'likes') {
@@ -375,6 +404,7 @@ class _EarnScreenState extends State<EarnScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        Theme.of(context); // Register dependency to rebuild instantly when theme toggles
         return AlertDialog(
           backgroundColor: AppTheme.surface,
           shape: RoundedRectangleBorder(
@@ -410,6 +440,7 @@ class _EarnScreenState extends State<EarnScreen> {
           actions: <Widget>[
             ElevatedButton(
               onPressed: () async {
+                final navigator = Navigator.of(context);
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('has_seen_follow_warning', true);
                 if (mounted) {
@@ -417,10 +448,10 @@ class _EarnScreenState extends State<EarnScreen> {
                     _hasSeenFollowWarning = true;
                   });
                 }
-                Navigator.of(context).pop();
+                navigator.pop();
                 // Proceed to task
+                _pendingFollowTask = task;
                 _launchURL(task['instagramLink'] ?? '');
-                _showVerificationDialog(task);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
@@ -443,6 +474,7 @@ class _EarnScreenState extends State<EarnScreen> {
       context: context,
       barrierDismissible: !_isClaiming,
       builder: (context) {
+        Theme.of(context); // Register dependency to rebuild instantly when theme toggles
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -455,7 +487,7 @@ class _EarnScreenState extends State<EarnScreen> {
                   Expanded(
                     child: Text(
                       ad['businessName'] ?? 'Sponsored Ad',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontSize: 18),
                     ),
                   ),
                 ],
@@ -540,6 +572,7 @@ class _EarnScreenState extends State<EarnScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Scaffold(
@@ -768,8 +801,8 @@ class _EarnScreenState extends State<EarnScreen> {
                   final data = doc.data() as Map<String, dynamic>;
                   final List viewedUsers = data['viewedUsers'] ?? [];
                   final String creatorId = data['userId'] ?? '';
-                  final int current = data['completedCount'] ?? 0;
-                  final int target = data['quantity'] ?? 0;
+                  final int current = (data['completedCount'] is num) ? (data['completedCount'] as num).toInt() : 0;
+                  final int target = (data['quantity'] is num) ? (data['quantity'] as num).toInt() : 0;
                   return creatorId != user.uid && !viewedUsers.contains(userDayKey) && current < target;
                 }).toList();
 
@@ -778,16 +811,16 @@ class _EarnScreenState extends State<EarnScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        'Sponsored Offers (Sponsor Ads)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        'Sponsors',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 130,
+                      height: 115,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -795,67 +828,100 @@ class _EarnScreenState extends State<EarnScreen> {
                         itemBuilder: (context, index) {
                           final adDoc = activeAds[index];
                           final adData = adDoc.data() as Map<String, dynamic>;
-                          return GestureDetector(
-                            onTap: () {
-                              _launchURL(adData['websiteLink'] ?? '');
-                              _showSponsorDetailsDialog(adData);
-                            },
-                            child: Container(
-                              width: 240,
-                              margin: const EdgeInsets.only(right: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [AppTheme.surface, const Color(0xFF1E1E2D)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppTheme.secondary.withOpacity(0.3), width: 1.5),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          final String creatorId = adData['userId'] ?? '';
+
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance.collection('users').doc(creatorId).get(),
+                            builder: (context, userSnapshot) {
+                              String creatorName = 'Creator';
+                              String? creatorPhotoUrl;
+
+                              if (userSnapshot.hasData && userSnapshot.data != null && userSnapshot.data!.exists) {
+                                final userData = userSnapshot.data!.data() as Map<String, dynamic>?;
+                                creatorName = userData?['name'] ?? 'Creator';
+                                creatorPhotoUrl = userData?['photoUrl'] ?? userData?['photoURL'];
+                              }
+
+                              return GestureDetector(
+                                onTap: () {
+                                  _pendingSponsorTask = adData;
+                                  _launchURL(adData['websiteLink'] ?? '');
+                                },
+                                child: Container(
+                                  width: 250,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppTheme.secondary.withOpacity(0.3), width: 1.5),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: Text(
-                                          adData['businessName'] ?? '',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primary.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: AppTheme.primary, width: 1),
-                                        ),
-                                        child: const Row(
-                                          children: [
-                                            Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 10),
-                                            Text(
-                                              ' +1',
-                                              style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 10),
+                                      // Creator Profile Header
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 12,
+                                            backgroundColor: AppTheme.primary.withOpacity(0.1),
+                                            backgroundImage: creatorPhotoUrl != null ? NetworkImage(creatorPhotoUrl) : null,
+                                            child: creatorPhotoUrl == null
+                                                ? const Icon(LucideIcons.user, size: 10, color: AppTheme.primary)
+                                                : null,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              creatorName,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                                color: AppTheme.textPrimary,
+                                              ),
                                             ),
-                                          ],
-                                        ),
-                                      )
+                                          ),
+                                          // Small Reward Badge
+                                          const Row(
+                                            children: [
+                                              Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 11),
+                                              Text(
+                                                ' +1.00',
+                                                style: TextStyle(
+                                                  color: AppTheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                                      const SizedBox(height: 6),
+                                      // Business Name
+                                      Text(
+                                        adData['businessName'] ?? '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      // Headline
+                                      Text(
+                                        adData['headline'] ?? '',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                                      ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    adData['headline'] ?? '',
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -867,11 +933,11 @@ class _EarnScreenState extends State<EarnScreen> {
             ),
 
             // Instagram & Sponsor Tasks Section
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 'Available Tasks',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
               ),
             ),
             const SizedBox(height: 12),
@@ -922,8 +988,8 @@ class _EarnScreenState extends State<EarnScreen> {
                     final campaignTasks = allCampaigns.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       final String creatorId = data['userId'] ?? '';
-                      final int current = data['completedCount'] ?? 0;
-                      final int target = data['quantity'] ?? 0;
+                      final int current = (data['completedCount'] is num) ? (data['completedCount'] as num).toInt() : 0;
+                      final int target = (data['quantity'] is num) ? (data['quantity'] as num).toInt() : 0;
                       final String goal = data['goal'] ?? '';
                       return creatorId != user.uid && current < target && goal == 'followers';
                     }).map((doc) {
@@ -940,8 +1006,8 @@ class _EarnScreenState extends State<EarnScreen> {
                       final data = doc.data() as Map<String, dynamic>;
                       final List viewedUsers = data['viewedUsers'] ?? [];
                       final String creatorId = data['userId'] ?? '';
-                      final int current = data['completedCount'] ?? 0;
-                      final int target = data['quantity'] ?? 0;
+                      final int current = (data['completedCount'] is num) ? (data['completedCount'] as num).toInt() : 0;
+                      final int target = (data['quantity'] is num) ? (data['quantity'] as num).toInt() : 0;
                       return creatorId != user.uid && !viewedUsers.contains(userDayKey) && current < target;
                     }).map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
@@ -996,19 +1062,7 @@ class _EarnScreenState extends State<EarnScreen> {
                         final task = tasks[index];
                         final bool isSponsor = task['isSponsor'] ?? false;
 
-                        String title;
-                        String subtitle;
-                        double reward = 1.0;
-
-                        if (isSponsor) {
-                          title = task['businessName'] ?? 'Sponsored Ad';
-                          subtitle = task['headline'] ?? 'Visit & earn coins';
-                          reward = 1.0;
-                        } else {
-                          title = 'Follow Instagram Creator';
-                          subtitle = 'Tap to complete task';
-                          reward = 0.20;
-                        }
+                        final double reward = isSponsor ? 1.0 : 0.20;
 
                         final String creatorId = task['userId'] ?? '';
 
@@ -1059,42 +1113,50 @@ class _EarnScreenState extends State<EarnScreen> {
                                           ),
                                           const SizedBox(width: 10),
                                           Expanded(
-                                            child: Text(
-                                              creatorName,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: AppTheme.textPrimary,
-                                              ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  creatorName,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                    color: AppTheme.textPrimary,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  isSponsor ? 'Sponsor' : 'Follow Task',
+                                                  style: TextStyle(
+                                                    color: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          // Prominent Badge
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: isSponsor 
-                                                  ? AppTheme.secondary.withOpacity(0.15) 
-                                                  : AppTheme.primary.withOpacity(0.15),
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(
-                                                color: isSponsor 
-                                                    ? AppTheme.secondary.withOpacity(0.3) 
-                                                    : AppTheme.primary.withOpacity(0.3),
-                                                width: 1,
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                LucideIcons.indianRupee, 
+                                                color: isSponsor ? AppTheme.secondary : AppTheme.primary, 
+                                                size: 13,
                                               ),
-                                            ),
-                                            child: Text(
-                                              isSponsor ? 'SPONSOR' : 'FOLLOW TASK',
-                                              style: TextStyle(
-                                                color: isSponsor ? AppTheme.secondary : AppTheme.primary,
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w900,
-                                                letterSpacing: 0.5,
+                                              Text(
+                                                ' +${reward.toStringAsFixed(2)}',
+                                                style: TextStyle(
+                                                  color: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -1103,17 +1165,21 @@ class _EarnScreenState extends State<EarnScreen> {
                                       const SizedBox(height: 12),
 
                                       // Campaign Content
-                                      Text(
-                                        title,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: AppTheme.textPrimary,
+                                      if (isSponsor) ...[
+                                        Text(
+                                          task['businessName'] ?? 'Sponsored Ad',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: AppTheme.textPrimary,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
+                                        const SizedBox(height: 4),
+                                      ],
                                       Text(
-                                        subtitle,
+                                        isSponsor 
+                                            ? (task['headline'] ?? 'Visit & earn coins') 
+                                            : (task['instagramLink'] ?? 'Follow on Instagram to earn coins'),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
@@ -1122,71 +1188,41 @@ class _EarnScreenState extends State<EarnScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 16),
-
-                                      // Footer Actions
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Reward
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Reward',
-                                                style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Row(
-                                                children: [
-                                                  const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 14),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '+₹${reward.toStringAsFixed(2)}',
-                                                    style: const TextStyle(
-                                                      color: AppTheme.primary,
-                                                      fontWeight: FontWeight.w900,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          // Action button
-                                          ElevatedButton.icon(
-                                            onPressed: () {
-                                              if (isSponsor) {
-                                                _launchURL(task['websiteLink'] ?? '');
-                                                _showSponsorDetailsDialog(task);
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            if (isSponsor) {
+                                              _pendingSponsorTask = task;
+                                              _launchURL(task['websiteLink'] ?? '');
+                                            } else {
+                                              if (_hasSeenFollowWarning) {
+                                                _pendingFollowTask = task;
+                                                _launchURL(task['instagramLink'] ?? '');
                                               } else {
-                                                if (_hasSeenFollowWarning) {
-                                                  _launchURL(task['instagramLink'] ?? '');
-                                                  _showVerificationDialog(task);
-                                                } else {
-                                                  _showFollowWarningDialog(task);
-                                                }
+                                                _showFollowWarningDialog(task);
                                               }
-                                            },
-                                            icon: Icon(
-                                              isSponsor ? LucideIcons.externalLink : LucideIcons.userPlus,
-                                              size: 14,
-                                              color: Colors.white,
-                                            ),
-                                            label: Text(
-                                              isSponsor ? 'Visit Ad' : 'Follow',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: isSponsor ? AppTheme.secondary : AppTheme.primary,
-                                              foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              elevation: 0,
-                                            ),
+                                            }
+                                          },
+                                          icon: Icon(
+                                            isSponsor ? LucideIcons.externalLink : LucideIcons.userPlus,
+                                            size: 14,
+                                            color: Colors.white,
                                           ),
-                                        ],
+                                          label: Text(
+                                            isSponsor ? 'Visit' : 'Follow',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
