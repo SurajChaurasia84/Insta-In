@@ -21,6 +21,8 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   String _upiId = '';
   String _upiNumber = '';
   bool _isLoadingProfile = true;
+  int _dailyFollowTasksCount = 0;
+  String _lastFollowTaskDate = '';
 
   @override
   void initState() {
@@ -41,6 +43,8 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
           setState(() {
             _upiId = doc.data()!['upiId'] ?? '';
             _upiNumber = doc.data()!['upiNumber'] ?? '';
+            _lastFollowTaskDate = doc.data()!['lastFollowTaskDate'] ?? '';
+            _dailyFollowTasksCount = ((doc.data()!['dailyFollowTasksCount'] ?? 0) as num).toInt();
             _isLoadingProfile = false;
           });
         }
@@ -152,6 +156,13 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   Widget build(BuildContext context) {
     Theme.of(context); // Register dependency to rebuild instantly when theme toggles
     final user = FirebaseAuth.instance.currentUser;
+
+    final String dateStr = DateTime.now().toIso8601String().substring(0, 10);
+    final int completedToday = (_lastFollowTaskDate == dateStr) ? _dailyFollowTasksCount : 0;
+    final bool isEligible = completedToday >= 5;
+
+    final bool isDark = AppTheme.themeNotifier.value == ThemeMode.dark;
+    final Color warningYellow = isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
 
     return Scaffold(
       appBar: AppBar(
@@ -268,6 +279,68 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                           ],
                         ),
                       ),
+
+                    // Daily Target Withdrawal Lock Alert
+                    if (!isEligible)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: warningYellow.withOpacity(0.1),
+                          border: Border.all(color: warningYellow.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.lock, color: warningYellow, size: 28),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Withdrawal Locked 🔒',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: warningYellow),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'You must complete at least 5 Instagram tasks today to request a withdrawal.\nProgress today: $completedToday / 5 completed.',
+                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.pop(context); // Go back
+                                      },
+                                      icon: const Icon(LucideIcons.arrowLeft, size: 14, color: Colors.white),
+                                      label: const Text(
+                                        'Go to Earn Screen',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.primary,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       
                     // Withdrawal Form
                     const Text('Withdrawal Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -279,6 +352,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                           TextFormField(
                             controller: _amountController,
                             keyboardType: TextInputType.number,
+                            enabled: isEligible,
                             decoration: const InputDecoration(
                               labelText: 'Amount to Withdraw (₹)',
                               prefixIcon: Icon(LucideIcons.indianRupee),
@@ -301,7 +375,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: (_isSubmitting || (_upiId.isEmpty && _upiNumber.isEmpty) || widget.currentBalance <= 0)
+                              onPressed: (_isSubmitting || (_upiId.isEmpty && _upiNumber.isEmpty) || widget.currentBalance <= 0 || !isEligible)
                                   ? null
                                   : _submitWithdrawal,
                               child: _isSubmitting
