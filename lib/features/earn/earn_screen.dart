@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:insta_in/features/earn/add_sponsor_ad_screen.dart';
 import 'package:insta_in/features/wallet/wallet_screen.dart';
+import 'package:insta_in/features/wallet/deposit_screen.dart';
 
 class EarnScreen extends StatefulWidget {
   const EarnScreen({super.key});
@@ -24,21 +25,33 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
   final PageController _bannerController = PageController(viewportFraction: 0.9);
   int _currentBannerPage = 0;
 
+  static const int _infoInitialPage = 10000;
+  late final PageController _infoPageController;
+  int _currentInfoPage = 0;
+  Timer? _infoTimer;
+
   Map<String, dynamic>? _pendingFollowTask;
   Map<String, dynamic>? _pendingSponsorTask;
+
+  String _lastFollowTaskDate = '';
+  int _dailyFollowTasksCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _infoPageController = PageController(initialPage: _infoInitialPage);
     WidgetsBinding.instance.addObserver(this);
     _loadCachedCoins();
     _subscribeToUserCoins();
+    _startInfoTimer();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _bannerController.dispose();
+    _infoPageController.dispose();
+    _infoTimer?.cancel();
     _userSubscription?.cancel();
     super.dispose();
   }
@@ -89,9 +102,13 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
           .listen((snapshot) async {
         if (snapshot.exists && snapshot.data() != null) {
           final double coins = (snapshot.data()!['coins'] ?? 0).toDouble();
+          final String lastDate = snapshot.data()!['lastFollowTaskDate'] ?? '';
+          final int dailyCount = ((snapshot.data()!['dailyFollowTasksCount'] ?? 0) as num).toInt();
           if (mounted) {
             setState(() {
               _coins = coins;
+              _lastFollowTaskDate = lastDate;
+              _dailyFollowTasksCount = dailyCount;
             });
           }
           try {
@@ -103,6 +120,19 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
         debugPrint('EarnScreen user subscription error: $error');
       });
     }
+  }
+
+  void _startInfoTimer() {
+    _infoTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_infoPageController.hasClients) {
+        final int currentPage = _infoPageController.page?.round() ?? _infoInitialPage;
+        _infoPageController.animateToPage(
+          currentPage + 1,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   Future<void> _launchURL(String urlString) async {
@@ -129,7 +159,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
     if (goal == 'likes') {
       reward = 4.0;
     } else if (goal == 'followers') {
-      reward = 0.20;
+      reward = 0.0;
     }
 
     setState(() {
@@ -164,10 +194,23 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
         final int totalCompleted = ((userSnapshot.data()?['completedCount'] ?? userSnapshot.data()?['completed'] ?? 0) as num).toInt();
 
         // 1. Reward the viewer
-        transaction.update(userRef, {
+        final Map<String, dynamic> updates = {
           'coins': currentCoins + reward,
           'completedCount': totalCompleted + 1,
-        });
+        };
+        if (goal == 'followers') {
+          final String lastDate = userSnapshot.data()?['lastFollowTaskDate'] ?? '';
+          final String dateStr = DateTime.now().toIso8601String().substring(0, 10);
+          int dailyFollowTasksCount = 0;
+          if (lastDate == dateStr) {
+            dailyFollowTasksCount = ((userSnapshot.data()?['dailyFollowTasksCount'] ?? 0) as num).toInt() + 1;
+          } else {
+            dailyFollowTasksCount = 1;
+          }
+          updates['lastFollowTaskDate'] = dateStr;
+          updates['dailyFollowTasksCount'] = dailyFollowTasksCount;
+        }
+        transaction.update(userRef, updates);
 
         // 2. Increment completedCount on the campaign
         final int newCompleted = currentCompleted + 1;
@@ -325,7 +368,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
         if (goal == 'likes') {
           reward = 4.0;
         } else if (goal == 'followers') {
-          reward = 0.20;
+          reward = 0.0;
         }
 
         return StatefulBuilder(
@@ -353,17 +396,19 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                     'Step 2: Confirm after completion to claim your reward.',
                     style: TextStyle(color: AppTheme.textSecondary),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Reward: +₹${reward.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 16),
-                      ),
-                    ],
-                  ),
+                  if (reward > 0.0) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.indianRupee, color: AppTheme.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Reward: +₹${reward.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -475,6 +520,8 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
       barrierDismissible: !_isClaiming,
       builder: (context) {
         Theme.of(context); // Register dependency to rebuild instantly when theme toggles
+        final bool isDark = AppTheme.themeNotifier.value == ThemeMode.dark;
+        final Color warningYellow = isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -498,7 +545,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                 children: [
                   Text(
                     ad['headline'] ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber, fontSize: 15),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: warningYellow, fontSize: 15),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -582,6 +629,11 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
 
     final String dateStr = DateTime.now().toIso8601String().substring(0, 10);
     final String userDayKey = "${user.uid}_$dateStr";
+    final int completedToday = (_lastFollowTaskDate == dateStr) ? _dailyFollowTasksCount : 0;
+    final bool isEligible = completedToday >= 5;
+
+    final bool isDark = AppTheme.themeNotifier.value == ThemeMode.dark;
+    final Color pendingColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
 
     return Scaffold(
       appBar: AppBar(
@@ -645,7 +697,68 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                           });
                         },
                         children: [
-                          // Banner 1: Promote Your Business
+                          // Banner 1: Claim Bonus
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color.fromARGB(255, 18, 2, 54), Color.fromARGB(255, 72, 143, 236)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color.fromARGB(255, 18, 2, 54).withOpacity(0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Got ₹20 Bonus!💰',
+                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text(
+                                        'Kickstart your journey! Get a ₹20 bonus on your first ₹100 deposit.',
+                                        style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const DepositScreen()),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: Color.fromARGB(255, 18, 2, 54),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        child: const Text('Claim Bonus', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),                         
+                          // Banner 2: Promote Your Business
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             padding: const EdgeInsets.all(18),
@@ -706,7 +819,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                               ],
                             ),
                           ),
-                          // Banner 2: Join WhatsApp Channel
+                          // Banner 3: Join Channel
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             padding: const EdgeInsets.all(18),
@@ -768,7 +881,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                     // Page indicator dots underneath the banners
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(2, (index) {
+                      children: List.generate(3, (index) {
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -785,6 +898,258 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                   ],
                 );
               },
+            ),
+
+            // Combined Trusted By & Daily Target Carousel Card
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withOpacity(0.08),
+                    AppTheme.secondary.withOpacity(0.08),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isEligible 
+                      ? AppTheme.success.withOpacity(0.3) 
+                      : AppTheme.primary.withOpacity(0.15),
+                  width: 1.5,
+                ),
+              ),
+              child: SizedBox(
+                height: 112,
+                child: PageView.builder(
+                  controller: _infoPageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentInfoPage = index % 2;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final int slideIndex = index % 2;
+                    if (slideIndex == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                        child: Row(
+                          children: [
+                            // Stacked profile avatars of creators
+                            SizedBox(
+                              width: 90,
+                              height: 40,
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    left: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppTheme.surface, width: 2),
+                                      ),
+                                      child: const CircleAvatar(
+                                        radius: 18,
+                                        backgroundImage: NetworkImage(
+                                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 18,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppTheme.surface, width: 2),
+                                      ),
+                                      child: const CircleAvatar(
+                                        radius: 18,
+                                        backgroundImage: NetworkImage(
+                                          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 36,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppTheme.surface, width: 2),
+                                      ),
+                                      child: const CircleAvatar(
+                                        radius: 18,
+                                        backgroundImage: NetworkImage(
+                                          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    left: 54,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppTheme.surface, width: 2),
+                                      ),
+                                      child: CircleAvatar(
+                                        radius: 18,
+                                        backgroundColor: AppTheme.primary,
+                                        child: const Text(
+                                          '10k+',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Trusted by 10,000+ Persons',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        LucideIcons.badgeCheck,
+                                        color: Colors.blue,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Used by top creators & businesses to build online presence.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                        child: Row(
+                          children: [
+                            // Sleek Radial Progress Chart
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child: CircularProgressIndicator(
+                                    value: completedToday / 5.0,
+                                    strokeWidth: 5,
+                                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      isEligible ? AppTheme.success : AppTheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '$completedToday/5',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            // Status description & Badge
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Daily Task Target',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      // Status badge
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: isEligible 
+                                              ? AppTheme.success.withOpacity(0.1) 
+                                              : pendingColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isEligible ? LucideIcons.checkCircle : LucideIcons.clock,
+                                              size: 11,
+                                              color: isEligible ? AppTheme.success : pendingColor,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              isEligible ? 'Eligible' : 'Pending',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: isEligible ? AppTheme.success : pendingColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    isEligible
+                                        ? '🎉 You are eligible for wallet withdrawals today!'
+                                        : 'Complete 5 Instagram tasks today to unlock withdrawals.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textSecondary,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
             ),
 
             // Sponsored Ads Row
@@ -1018,7 +1383,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                       };
                     }).toList();
 
-                    // Combine tasks
+                    // Combine tasks (both sponsor and follower tasks are active now)
                     final tasks = [...sponsorTasks, ...campaignTasks];
 
                     if (tasks.isEmpty) {
@@ -1062,7 +1427,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                         final task = tasks[index];
                         final bool isSponsor = task['isSponsor'] ?? false;
 
-                        final double reward = isSponsor ? 1.0 : 0.20;
+                        final double reward = isSponsor ? 1.0 : 0.0;
 
                         final String creatorId = task['userId'] ?? '';
 
@@ -1140,24 +1505,25 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                LucideIcons.indianRupee, 
-                                                color: isSponsor ? AppTheme.secondary : AppTheme.primary, 
-                                                size: 13,
-                                              ),
-                                              Text(
-                                                ' +${reward.toStringAsFixed(2)}',
-                                                style: TextStyle(
-                                                  color: isSponsor ? AppTheme.secondary : AppTheme.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
+                                          if (reward > 0.0)
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  LucideIcons.indianRupee, 
+                                                  color: isSponsor ? AppTheme.secondary : AppTheme.primary, 
+                                                  size: 13,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                                Text(
+                                                  ' +${reward.toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                    color: isSponsor ? AppTheme.secondary : AppTheme.primary,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                         ],
                                       ),
                                       const SizedBox(height: 12),
