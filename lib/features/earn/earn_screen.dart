@@ -245,7 +245,9 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
         Navigator.pop(context); // Close dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🎉 Claimed +₹${reward.toStringAsFixed(2)} successfully!'),
+            content: Text(reward > 0.0
+                ? '🎉 Claimed +₹${reward.toStringAsFixed(2)} successfully!'
+                : '🎉 Task completed successfully!'),
             backgroundColor: AppTheme.success,
           ),
         );
