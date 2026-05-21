@@ -27,8 +27,10 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
 
   static const int _infoInitialPage = 10000;
   late final PageController _infoPageController;
-  int _currentInfoPage = 0;
   Timer? _infoTimer;
+
+  late final Stream<QuerySnapshot> _sponsorAdsStream;
+  late final Stream<QuerySnapshot> _campaignsStream;
 
   Map<String, dynamic>? _pendingFollowTask;
   Map<String, dynamic>? _pendingSponsorTask;
@@ -44,6 +46,15 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
     _loadCachedCoins();
     _subscribeToUserCoins();
     _startInfoTimer();
+
+    _sponsorAdsStream = FirebaseFirestore.instance
+        .collection('sponsor_ads')
+        .where('status', isEqualTo: 'active')
+        .snapshots();
+    _campaignsStream = FirebaseFirestore.instance
+        .collection('campaigns')
+        .where('status', isEqualTo: 'active')
+        .snapshots();
   }
 
   @override
@@ -924,11 +935,6 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                 height: 112,
                 child: PageView.builder(
                   controller: _infoPageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentInfoPage = index % 2;
-                    });
-                  },
                   itemBuilder: (context, index) {
                     final int slideIndex = index % 2;
                     if (slideIndex == 0) {
@@ -1154,10 +1160,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
 
             // Sponsored Ads Row
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('sponsor_ads')
-                  .where('status', isEqualTo: 'active')
-                  .snapshots(),
+              stream: _sponsorAdsStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const SizedBox();
 
@@ -1308,10 +1311,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
             const SizedBox(height: 12),
 
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('campaigns')
-                  .where('status', isEqualTo: 'active')
-                  .snapshots(),
+              stream: _campaignsStream,
               builder: (context, campaignSnapshot) {
                 if (campaignSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -1332,10 +1332,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                 }
 
                 return StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('sponsor_ads')
-                      .where('status', isEqualTo: 'active')
-                      .snapshots(),
+                  stream: _sponsorAdsStream,
                   builder: (context, sponsorSnapshot) {
                     if (sponsorSnapshot.hasError) {
                       return Center(
