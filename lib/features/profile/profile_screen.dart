@@ -621,12 +621,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     },
                   ),
-                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Column(
+                children: [
                   _buildMenuItem(
                     icon: LucideIcons.logOut,
                     title: 'Log Out',
                     color: AppTheme.error,
                     onTap: _showLogoutConfirmationDialog,
+                    showChevron: false,
+                    centerText: true,
                   ),
                   Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
                   _buildMenuItem(
@@ -634,6 +642,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Delete Account',
                     color: AppTheme.error,
                     onTap: _showDeleteAccountConfirmationDialog,
+                    showChevron: false,
+                    centerText: true,
                   ),
                 ],
               ),
@@ -716,17 +726,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required VoidCallback onTap,
     Color? color,
+    bool showChevron = true,
+    bool centerText = false,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? AppTheme.textSecondary),
+      leading: centerText ? null : Icon(icon, color: color ?? AppTheme.textSecondary),
       title: Text(
         title,
+        textAlign: centerText ? TextAlign.center : TextAlign.left,
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: color ?? AppTheme.textPrimary,
         ),
       ),
-      trailing: Icon(LucideIcons.chevronRight, size: 18, color: AppTheme.textSecondary),
+      trailing: showChevron ? Icon(LucideIcons.chevronRight, size: 18, color: AppTheme.textSecondary) : null,
       onTap: onTap,
     );
   }
