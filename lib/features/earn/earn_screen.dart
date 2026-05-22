@@ -913,6 +913,110 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
               },
             ),
 
+            // ── Follow Us on Instagram (Permanent) ──────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF833AB4).withOpacity(0.12),
+                      const Color(0xFFF77737).withOpacity(0.12),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF833AB4).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Row 1: Header
+                      Row(
+                        children: [
+                          const Icon(LucideIcons.instagram, color: Color(0xFFE1306C), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Follow Us on Instagram',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Row 2: Both links
+                      Row(
+                        children: [
+                          // Link 1
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _launchURL('https://www.instagram.com/instagram?igsh=MW92aHF4bWsxcTh5Yw=='),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF833AB4), Color(0xFFE1306C)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  '@instagram',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Link 2
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _launchURL('https://www.instagram.com/instagramforbusiness?igsh=dnBmZ3F5aDh2ZHM2'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFE1306C), Color(0xFFF77737)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  '@instagramforbusiness',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             // Combined Trusted By & Daily Target Carousel Card
             Container(
               margin: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -1217,8 +1321,11 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
               ),
             ),
 
+
             // Sponsored Ads Row
             StreamBuilder<QuerySnapshot>(
+
+
               stream: _sponsorAdsStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const SizedBox();
@@ -1660,6 +1767,83 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
               },
             ),
             const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstagramLinkTile({
+    required String username,
+    required String subtitle,
+    required String url,
+    required List<Color> gradientColors,
+  }) {
+    return GestureDetector(
+      onTap: () => _launchURL(url),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: gradientColors.first.withOpacity(0.25),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Gradient circle icon
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(LucideIcons.instagram, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    username,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Arrow
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(LucideIcons.externalLink, color: Colors.white, size: 14),
+            ),
           ],
         ),
       ),
