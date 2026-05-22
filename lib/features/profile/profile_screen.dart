@@ -22,7 +22,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _displayName = 'Insta In User';
+  String _displayName = 'Instagram.In User';
   int _campaignsCount = 0;
   int _sponsorAdsCount = 0;
   int _completedCount = 0;
@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         setState(() {
-          _displayName = prefs.getString('cache_name_${user.uid}') ?? user.displayName ?? 'Insta In User';
+          _displayName = prefs.getString('cache_name_${user.uid}') ?? user.displayName ?? 'Instagram.In User';
           _coins = prefs.getDouble('cache_coins_${user.uid}') ?? 0.0;
           _campaignsCount = prefs.getInt('cache_campaigns_${user.uid}') ?? 0;
           _sponsorAdsCount = prefs.getInt('cache_sponsors_${user.uid}') ?? 0;
@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .listen((snapshot) async {
         if (snapshot.exists && snapshot.data() != null) {
           final data = snapshot.data()!;
-          final String name = data['name'] ?? user.displayName ?? 'Insta In User';
+          final String name = data['name'] ?? user.displayName ?? 'Instagram.In User';
           final double coins = (data['coins'] ?? 0).toDouble();
           final int completed = ((data['completedCount'] ?? data['completed'] ?? 0) as num).toInt();
 
@@ -187,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           content: Text(
-            'Are you sure you want to log out from Insta In?',
+            'Are you sure you want to log out from Instagram.In?',
             style: TextStyle(color: AppTheme.textSecondary),
           ),
           actions: <Widget>[
@@ -436,8 +436,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _shareApp() {
     Share.share(
-      '🚀 Hey! Check out Insta In - the ultimate app to grow your Instagram community, gain active engagement, authentic likes, and real followers.\n\n👇 Download from Google Play Store:\nhttps://play.google.com/store/apps/details?id=com.instain.social.app 🌟',
-      subject: 'Boost your Instagram with Insta In!',
+      '🚀 Hey! Check out Instagram.In - the ultimate app to grow your Instagram community, gain active engagement, authentic likes, and real followers.\n\n👇 Download from Google Play Store:\nhttps://play.google.com/store/apps/details?id=com.instain.social.app 🌟',
+      subject: 'Boost your Instagram with Instagram.In!',
     );
   }
 
@@ -446,7 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       scheme: 'mailto',
       path: 'jaswantsingh777705@gmail.com',
       queryParameters: {
-        'subject': 'Insta In Help & Support Request',
+        'subject': 'Instagram.In Help & Support Request',
       },
     );
     try {
