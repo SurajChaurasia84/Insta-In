@@ -219,6 +219,19 @@ class AppInfoScreen extends StatelessWidget {
                     color: AppTheme.textSecondary.withOpacity(0.5),
                   ),
                 ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'This application is an independent peer-to-peer platform and is not affiliated with, associated, authorized, endorsed by, or in any way officially connected with Instagram, Meta Platforms, Inc., or any of its subsidiaries.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: AppTheme.textSecondary.withOpacity(0.4),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
