@@ -23,7 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, dynamic>> _slides = [
     {
-      'title': 'Welcome to Insta In',
+      'title': 'Welcome to Instagram.In',
       'description': 'Boost your Instagram presence! Easily get likes, views, and real followers from our active community.',
       'icon': LucideIcons.instagram,
       'color': AppTheme.primary,
@@ -86,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         if (!userDoc.exists) {
           await userDocRef.set({
             'uid': user.uid,
-            'name': user.displayName ?? 'Insta In User',
+            'name': user.displayName ?? 'Instagram.In User',
             'email': user.email ?? '',
             'photoUrl': user.photoURL ?? '',
             'createdAt': FieldValue.serverTimestamp(),
@@ -94,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           });
         } else {
           await userDocRef.update({
-            'name': user.displayName ?? 'Insta In User',
+            'name': user.displayName ?? 'Instagram.In User',
             'photoUrl': user.photoURL ?? '',
           });
         }
