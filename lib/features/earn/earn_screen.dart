@@ -938,7 +938,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                 child: PageView.builder(
                   controller: _infoPageController,
                   itemBuilder: (context, index) {
-                    final int slideIndex = index % 2;
+                    final int slideIndex = index % 3;
                     if (slideIndex == 0) {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -1057,7 +1057,7 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                           ],
                         ),
                       );
-                    } else {
+                    } else if (slideIndex == 1) {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                         child: Row(
@@ -1144,6 +1144,63 @@ class _EarnScreenState extends State<EarnScreen> with WidgetsBindingObserver {
                                         : 'Complete 5 Instagram tasks today to unlock withdrawals.',
                                     style: TextStyle(
                                       fontSize: 11,
+                                      color: AppTheme.textSecondary,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                LucideIcons.trendingUp,
+                                color: AppTheme.primary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Dream Enjoy!',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        LucideIcons.sparkles,
+                                        color: Colors.amber,
+                                        size: 14,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Grow your social presence and boost engagement daily • Connect with active creators and build your audience today!',
+                                    style: TextStyle(
+                                      fontSize: 10,
                                       color: AppTheme.textSecondary,
                                       height: 1.3,
                                     ),
