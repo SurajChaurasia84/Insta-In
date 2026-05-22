@@ -220,6 +220,210 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _deleteAccount() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(color: AppTheme.primary),
+        );
+      },
+    );
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+
+        await _userSubscription?.cancel();
+        await _campaignsSubscription?.cancel();
+        await _sponsorAdsSubscription?.cancel();
+        _userSubscription = null;
+        _campaignsSubscription = null;
+        _sponsorAdsSubscription = null;
+
+        final firestore = FirebaseFirestore.instance;
+        
+        final campaignsQuery = await firestore.collection('campaigns').where('userId', isEqualTo: uid).get();
+        final sponsorAdsQuery = await firestore.collection('sponsor_ads').where('userId', isEqualTo: uid).get();
+        final depositsQuery = await firestore.collection('deposits').where('userId', isEqualTo: uid).get();
+        final withdrawalsQuery = await firestore.collection('withdrawals').where('userId', isEqualTo: uid).get();
+        final activitiesQuery = await firestore.collection('users').doc(uid).collection('activities').get();
+
+        final batch = firestore.batch();
+
+        for (var doc in campaignsQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        for (var doc in sponsorAdsQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        for (var doc in depositsQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        for (var doc in withdrawalsQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        for (var doc in activitiesQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        batch.delete(firestore.collection('users').doc(uid));
+
+        await batch.commit();
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('cache_name_$uid');
+        await prefs.remove('cache_coins_$uid');
+        await prefs.remove('cache_campaigns_$uid');
+        await prefs.remove('cache_sponsors_$uid');
+        await prefs.remove('cache_completed_$uid');
+
+        try {
+          await user.delete();
+        } on FirebaseAuthException catch (authError) {
+          if (authError.code == 'requires-recent-login') {
+            if (mounted) Navigator.of(context).pop();
+            
+            if (mounted) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: AppTheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: Row(
+                      children: [
+                        const Icon(LucideIcons.alertTriangle, color: AppTheme.error),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Re-authentication Required',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: const Text(
+                      'For security, you must log out and log back in before deleting your account.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+            return;
+          } else {
+            rethrow;
+          }
+        }
+
+        await FirebaseAuth.instance.signOut();
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+
+        if (mounted) Navigator.of(context).pop();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account and all associated data deleted successfully.'),
+              backgroundColor: AppTheme.success,
+            ),
+          );
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+          );
+        }
+      } else {
+        if (mounted) Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete account: ${e.toString()}'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteAccountConfirmationDialog() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              const Icon(LucideIcons.trash2, color: AppTheme.error),
+              const SizedBox(width: 8),
+              Text(
+                'Delete Account',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete your account? This action is permanent and cannot be undone. All your coins, campaigns, sponsor ads, transactions, and account history will be deleted forever.',
+            style: TextStyle(color: AppTheme.textSecondary),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.error,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Delete Permanently'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await _deleteAccount();
+    }
+  }
+
   void _navigateToEditProfile() async {
     final updated = await Navigator.push(
       context,
@@ -423,6 +627,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Log Out',
                     color: AppTheme.error,
                     onTap: _showLogoutConfirmationDialog,
+                  ),
+                  Divider(color: AppTheme.textSecondary.withOpacity(0.1), height: 1),
+                  _buildMenuItem(
+                    icon: LucideIcons.trash2,
+                    title: 'Delete Account',
+                    color: AppTheme.error,
+                    onTap: _showDeleteAccountConfirmationDialog,
                   ),
                 ],
               ),
