@@ -13,7 +13,7 @@ class AppInfoScreen extends StatelessWidget {
       scheme: 'mailto',
       path: 'jaswantsingh777705@gmail.com',
       queryParameters: {
-        'subject': 'Insta In Support Request',
+        'subject': 'Instagram.In Support Request',
       },
     );
     try {
@@ -36,7 +36,7 @@ class AppInfoScreen extends StatelessWidget {
         future: PackageInfo.fromPlatform(),
         builder: (context, snapshot) {
           final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
-          final String appName = snapshot.data?.appName ?? 'Insta In';
+          final String appName = snapshot.data?.appName ?? 'Instagram.In';
           final String version = snapshot.data?.version ?? '1.0.0';
           final String buildNumber = snapshot.data?.buildNumber ?? '1';
 
@@ -162,7 +162,7 @@ class AppInfoScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Boost your Instagram presence! Insta In helps creators easily gain authentic likes, views, and real followers through our active peer-to-peer engagement community.',
+                          'Boost your Instagram presence! Instagram.In helps creators easily gain authentic likes, views, and real followers through our active peer-to-peer engagement community.',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppTheme.textSecondary.withOpacity(0.9),
@@ -213,7 +213,7 @@ class AppInfoScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '© 2026 Insta In. All rights reserved.',
+                  '© 2026 Instagram.In. All rights reserved.',
                   style: TextStyle(
                     fontSize: 11,
                     color: AppTheme.textSecondary.withOpacity(0.5),
