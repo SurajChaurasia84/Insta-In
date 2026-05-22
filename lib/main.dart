@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
       valueListenable: AppTheme.themeNotifier,
       builder: (context, currentMode, child) {
         return MaterialApp(
-          title: 'Insta In',
+          title: 'Instagram.In',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
